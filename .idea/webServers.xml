@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5a79bae0-75f8-4466-ba02-ccc69cadb24a" name="EC2-SmartCount">
+        <fileTransfer rootFolder="/home/ubuntu" accessType="SFTP" host="54.229.11.219" port="22" sshConfigId="cf79ee93-4a50-40f4-a4c5-2dd6a8c56090" sshConfig="ubuntu@54.229.11.219:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
