@@ -93,14 +93,21 @@ export const projectService = {
 
     async getPdfData(pdfId: string): Promise<string | null> {
         try {
-            // Use server proxy with correct endpoint
+            console.log('Fetching PDF data for ID:', pdfId);
+            
             const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}/download`, {
                 headers: getAuthHeaders()
             });
             
-            if (!response.ok) return null;
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                console.log('Response not OK:', response.status, response.statusText);
+                return null;
+            }
             
             const arrayBuffer = await response.arrayBuffer();
+            console.log('ArrayBuffer size:', arrayBuffer.byteLength);
             
             // Convert to base64
             const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
