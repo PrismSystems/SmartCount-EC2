@@ -93,17 +93,14 @@ export const projectService = {
 
     async getPdfData(pdfId: string): Promise<string | null> {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}`, {
+            // Use server proxy instead of direct S3 access
+            const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}/download`, {
                 headers: getAuthHeaders()
             });
             
             if (!response.ok) return null;
             
-            const { signedUrl } = await response.json();
-            
-            // Fetch the actual PDF data
-            const pdfResponse = await fetch(signedUrl);
-            const arrayBuffer = await pdfResponse.arrayBuffer();
+            const arrayBuffer = await response.arrayBuffer();
             
             // Convert to base64
             const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));

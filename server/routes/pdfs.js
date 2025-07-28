@@ -49,7 +49,7 @@ router.post('/upload', upload.single('pdf'), async (req, res) => {
     }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id/download', async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT p.*, pr.user_id FROM pdfs p JOIN projects pr ON p.project_id = pr.id WHERE p.id = $1 AND pr.user_id = $2',
@@ -63,16 +63,20 @@ router.get('/:id', async (req, res) => {
         const pdf = result.rows[0];
         const key = `${req.user.userId}/${pdf.project_id}/${pdf.id}.pdf`;
         
-        // Get signed URL from S3
-        const signedUrl = s3.getSignedUrl('getObject', {
+        // Stream PDF directly from S3 through server
+        const params = {
             Bucket: process.env.AWS_BUCKET_NAME,
-            Key: key,
-            Expires: 3600 // 1 hour
-        });
+            Key: key
+        };
         
-        res.json({ ...pdf, signedUrl });
+        const stream = s3.getObject(params).createReadStream();
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${pdf.name}.pdf"`);
+        
+        stream.pipe(res);
     } catch (error) {
-        console.error('Get PDF error:', error);
+        console.error('Download PDF error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
