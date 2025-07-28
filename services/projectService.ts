@@ -109,8 +109,17 @@ export const projectService = {
             const arrayBuffer = await response.arrayBuffer();
             console.log('ArrayBuffer size:', arrayBuffer.byteLength);
             
-            // Convert to base64
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            // Convert to base64 safely for large files
+            const uint8Array = new Uint8Array(arrayBuffer);
+            let binary = '';
+            const chunkSize = 8192; // Process in chunks to avoid stack overflow
+            
+            for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                const chunk = uint8Array.slice(i, i + chunkSize);
+                binary += String.fromCharCode.apply(null, Array.from(chunk));
+            }
+            
+            const base64 = btoa(binary);
             return `data:application/pdf;base64,${base64}`;
         } catch (error) {
             console.error('Error fetching PDF:', error);
