@@ -1,4 +1,5 @@
 import express from 'express';
+
 import pool from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
