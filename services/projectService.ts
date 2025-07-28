@@ -93,7 +93,7 @@ export const projectService = {
 
     async getPdfData(pdfId: string): Promise<string | null> {
         try {
-            // Use server proxy instead of direct S3 access
+            // Use server proxy with correct endpoint
             const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}/download`, {
                 headers: getAuthHeaders()
             });
