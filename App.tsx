@@ -2156,16 +2156,8 @@ const App: React.FC = () => {
                 onConfirm={handleSavePsuLocation}
                 initialLocation={editingPsuNetwork?.psuLocation?.location}
             />
-          
-    } catch (error) {
-        console.error('Render error:', error);
-        return <div>Error loading project. Check console for details.</div>;
-    }      </div>
-        );
-    } catch (error) {
-        console.error('Render error:', error);
-        return <div>Error loading project. Check console for details.</div>;
-    }
+        </div>
+    );
 };
 
 export default App;
