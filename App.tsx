@@ -89,12 +89,42 @@ const App: React.FC = () => {
     const [redoStack, setRedoStack] = useState<Project[]>([]);
 
     const activeProject = useMemo(() => {
-        if (!Array.isArray(projects) || !activeProjectId) return undefined;
-        const project = projects.find(p => p.id === activeProjectId);
-        console.log('Active project:', project); // Debug log
-        return project;
+        try {
+            if (!Array.isArray(projects) || !activeProjectId) return undefined;
+            const project = projects.find(p => p.id === activeProjectId);
+            console.log('Active project found:', project);
+            
+            // Ensure the project has all required arrays
+            if (project) {
+                return {
+                    ...project,
+                    pdfs: project.pdfs || [],
+                    symbols: project.symbols || [],
+                    disciplines: project.disciplines || [],
+                    areas: project.areas || [],
+                    measurements: project.measurements || [],
+                    measurementGroups: project.measurementGroups || [],
+                    daliNetworks: project.daliNetworks || [],
+                    daliDevices: project.daliDevices || [],
+                    ecdTypes: project.ecdTypes || [],
+                    daliNetworkTemplates: project.daliNetworkTemplates || []
+                };
+            }
+            return undefined;
+        } catch (error) {
+            console.error('Error in activeProject memo:', error);
+            return undefined;
+        }
     }, [projects, activeProjectId]);
-    const activePdfMetadata = useMemo(() => activeProject?.pdfs.find(p => p.id === activePdfId), [activeProject, activePdfId]);
+    const activePdfMetadata = useMemo(() => {
+        try {
+            if (!activeProject || !Array.isArray(activeProject.pdfs)) return undefined;
+            return activeProject.pdfs.find(p => p.id === activePdfId);
+        } catch (error) {
+            console.error('Error in activePdfMetadata memo:', error);
+            return undefined;
+        }
+    }, [activeProject, activePdfId]);
 
     const commitUpdate = (newProjectState: Project, fromUndoRedo: boolean = false) => {
         if (!fromUndoRedo && activeProject) {
@@ -1868,266 +1898,276 @@ const App: React.FC = () => {
         return <ProjectScreen projects={projects} onCreate={handleCreateProject} onLoad={handleLoadProject} onDelete={handleDeleteProject} onRestoreSingleProject={handleRestoreSingleProject} />;
     }
     
-    const activeSymbolColor = activeProject.symbols.find(s => s.id === activeSymbolId)?.color;
-    const areasForCurrentPdf = activeProject.areas.filter(a => a.pdfId === activePdfId);
-    const measurementsForCurrentPdf = activeProject.measurements.filter(m => m.pdfId === activePdfId);
-    const manualEntryToEdit = editingManualEntry ? activeProject.measurements.find(m => m.id === editingManualEntry.measurementId)?.manualEntries?.find(e => e.id === editingManualEntry.entryId) : undefined;
-
-    const getSelectionBanner = () => {
-        if (mode === 'selecting_manual') {
-            return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a box around the symbol to add manually. Press 'Escape' to cancel.</div>;
+    try {
+        try {?
+            const activeSymbolColor = activeProject.sy?mbols?.find(s => s.id === activeSymbo || []lId)?.color;
+            const areasForCurrentPdf = activeProject.areas?.filter(a? => a.pdfId === activePdfId) || []; || []
+            const measurementsForCurrentPdf = activeProject.measurements?.filter(m => m.pdfId === activePdfId) || [];
+        const manualEntryToEdit = editingManualEntry ? activeProject.measurements.find(m => m.id === editingManualEntry.measurementId)?.manualEntries?.find(e => e.id === editingManualEntry.entryId) : undefined;
+    
+            const getSelectionBanner = () => {
+                if (mode === 'selecting_manual') {
+                    return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a box around the symbol to add manually. Press 'Escape' to cancel.</div>;
+                }
+                if (mode === 'placing_dots') {
+                    return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place pins. Press 'Enter' or 'Escape' to finish.</div>;
+                }
+                if (mode === 'drawing_area') {
+                    return <div className="absolute top-4 bg-green-500 text-white p-3 rounded-lg shadow-lg z-50">Click to draw polygon points. Press 'Enter' to finish or 'Escape' to cancel.</div>;
+                }
+                if (mode === 'setting_scale') {
+                    return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a line over a known distance. Press 'Enter' when done or 'Escape' to cancel.</div>;
+                }
+                if (mode === 'drawing_measurement') {
+                    const text = activeDrawingMeasurementId ? 'Click to add a new segment. Press \'Enter\' to save.' : 'Click to draw measurement points. Press \'Enter\' to save.';
+                    return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">{text} Press 'Escape' to cancel.</div>;
+                }
+                if (mode === 'placing_dali_device') {
+                    const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPlacement?.networkId);
+                    const deviceTypeName = activeDaliPlacement?.deviceType === 'ECG' ? 'ECG (Gear)' : 'ECD (Control)';
+                    return <div className="absolute top-4 bg-cyan-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a {deviceTypeName} for network {network?.name}. Press 'Enter' or 'Escape' to finish.</div>;
+                }
+                if (mode === 'selecting_dali_painter_source') {
+                    return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on a DALI device or PSU to copy its properties. Press 'Escape' to cancel.</div>;
+                }
+                if (mode === 'painting_dali_device') {
+                    return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place copies. Press 'Enter' or 'Escape' to finish.</div>;
+                }
+                if (mode === 'painting_dali_psu_location') {
+                    return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on other PSUs to apply the location. Press 'Enter' or 'Escape' to finish.</div>;
+                }
+                if (mode === 'placing_dali_psu') {
+                    const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPsuPlacementNetworkId);
+                    return <div className="absolute top-4 bg-indigo-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a Power Supply Unit for network {network?.name}. Press 'Escape' to finish.</div>;
+                }
+                return null;
         }
-        if (mode === 'placing_dots') {
-            return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place pins. Press 'Enter' or 'Escape' to finish.</div>;
-        }
-        if (mode === 'drawing_area') {
-            return <div className="absolute top-4 bg-green-500 text-white p-3 rounded-lg shadow-lg z-50">Click to draw polygon points. Press 'Enter' to finish or 'Escape' to cancel.</div>;
-        }
-        if (mode === 'setting_scale') {
-            return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a line over a known distance. Press 'Enter' when done or 'Escape' to cancel.</div>;
-        }
-        if (mode === 'drawing_measurement') {
-            const text = activeDrawingMeasurementId ? 'Click to add a new segment. Press \'Enter\' to save.' : 'Click to draw measurement points. Press \'Enter\' to save.';
-            return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">{text} Press 'Escape' to cancel.</div>;
-        }
-        if (mode === 'placing_dali_device') {
-            const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPlacement?.networkId);
-            const deviceTypeName = activeDaliPlacement?.deviceType === 'ECG' ? 'ECG (Gear)' : 'ECD (Control)';
-            return <div className="absolute top-4 bg-cyan-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a {deviceTypeName} for network {network?.name}. Press 'Enter' or 'Escape' to finish.</div>;
-        }
-        if (mode === 'selecting_dali_painter_source') {
-            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on a DALI device or PSU to copy its properties. Press 'Escape' to cancel.</div>;
-        }
-        if (mode === 'painting_dali_device') {
-            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place copies. Press 'Enter' or 'Escape' to finish.</div>;
-        }
-        if (mode === 'painting_dali_psu_location') {
-            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on other PSUs to apply the location. Press 'Enter' or 'Escape' to finish.</div>;
-        }
-        if (mode === 'placing_dali_psu') {
-            const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPsuPlacementNetworkId);
-            return <div className="absolute top-4 bg-indigo-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a Power Supply Unit for network {network?.name}. Press 'Escape' to finish.</div>;
-        }
-        return null;
+    
+            return (
+                <div className="flex h-screen bg-gray-100 font-sans">
+                    <Sidebar
+                        projects={projects}
+                        activeProject={activeProject}
+                        onSwitchProject={handleLoadProject}
+                        onCreateNewProject={() => {setActiveProjectId(null); setActivePdfId(null);}}
+                        onDeleteProject={handleDeleteProject}
+                        onLogout={handleLogout}
+                        activePdfId={activePdfId}
+                        currentPage={currentPage}
+                        onSwitchPdf={handleSwitchPdf}
+                        onAddPdfs={handleAddPdfs}
+                        onUpdatePdfLevel={handleUpdatePdfLevel}
+                        onDeletePdf={handleDeletePdf}
+                        onStartManualSelection={startManualSelection}
+                        onExportExcel={handleOpenExportModal}
+                        onExportPdfReport={handleExportPdfReport}
+                        onExportDaliPdfReport={handleExportDaliPdfReport}
+                        onViewCounts={() => setIsCountsTableOpen(true)}
+                        isExporting={isLoading}
+                        isExportingPdf={isExportingPdf}
+                        isExportingDaliPdf={isExportingDaliPdf}
+                        isLoading={isLoading || isRestoring}
+                        mode={mode}
+                        onSymbolNameChange={handleSymbolNameChange}
+                        onSymbolColorChange={handleSymbolColorChange}
+                        onSymbolImageChange={handleSymbolImageChange}
+                        onSymbolDelete={handleSymbolDelete}
+                        onAddPoints={handleAddPoints}
+                        onOpenCopyModal={handleOpenCopyModal}
+                        activeSymbolId={activeSymbolId}
+                        setActiveSymbolId={handleSetActiveSymbol}
+                        onAddDiscipline={handleAddDiscipline}
+                        onUpdateDisciplineName={handleUpdateDisciplineName}
+                        onAssignDiscipline={handleAssignDiscipline}
+                        activeDisciplineId={activeDisciplineId}
+                        setActiveDisciplineId={handleSetActiveDiscipline}
+                        onDeleteDiscipline={handleDeleteDiscipline}
+                        onUpdateDisciplineParent={handleUpdateDisciplineParent}
+                        onBackupAll={handleBackupAll}
+                        onBackupSingleProject={handleBackupSingleProject}
+                        onRestoreAll={handleRestoreAll}
+                        onStartAreaDrawing={handleStartAreaDrawing}
+                        onDeleteArea={handleDeleteArea}
+                        onUpdateArea={handleUpdateArea}
+                        onStartSetScale={handleStartSetScale}
+                        onStartMeasure={handleStartMeasure}
+                        onStartAddToMeasurement={handleStartAddToMeasurement}
+                        onUpdateMeasurement={handleUpdateMeasurement}
+                        onDeleteMeasurement={handleDeleteMeasurement}
+                        measurements={measurementsForCurrentPdf}
+                        measurementGroups={activeProject.measurementGroups}
+                        onAddMeasurementGroup={handleAddMeasurementGroup}
+                        onUpdateMeasurementGroupName={handleUpdateMeasurementGroupName}
+                        onDeleteMeasurementGroup={handleDeleteMeasurementGroup}
+                        onAssignMeasurementToGroup={handleAssignMeasurementToGroup}
+                        onUpdateMeasurementGroupParent={handleUpdateMeasurementGroupParent}
+                        scaleInfo={activePdfMetadata?.scaleInfo}
+                        selectedMeasurementId={selectedMeasurementId}
+                        onSelectMeasurement={handleSelectMeasurementForEditing}
+                        onOpenManualLengthModal={handleOpenManualLengthModal}
+                        onDeleteManualEntry={handleDeleteManualEntry}
+                        pdfOpacity={pdfOpacity}
+                        onPdfOpacityChange={handlePdfOpacityChange}
+                        onAddDaliNetwork={handleAddDaliNetwork}
+                        onUpdateDaliNetwork={handleUpdateDaliNetwork}
+                        onDeleteDaliNetwork={handleDeleteDaliNetwork}
+                        onStartDaliPlacement={handleStartDaliPlacement}
+                        onOpenEcdSchedule={() => setIsEcdScheduleModalOpen(true)}
+                        onDaliNetworkHover={setHoveredDaliNetworkId}
+                        onStartDaliPaintSelection={handleStartDaliPaintSelection}
+                        showDaliLabels={showDaliLabels}
+                        onToggleDaliLabels={handleToggleDaliLabels}
+                        onStartPlacePsu={handleStartPlacePsu}
+                        onDeletePsu={handleDeletePsu}
+                        onRenumberDaliNetwork={handleRenumberDaliNetwork}
+                        onSaveDaliNetworkAsTemplate={handleSaveDaliNetworkAsTemplate}
+                    />
+                    <main className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200 overflow-auto">
+                        {error && <div className="absolute top-4 bg-red-500 text-white p-3 rounded-lg shadow-lg z-50 animate-pulse" onClick={() => setError(null)}>{error}</div>}
+                        {getSelectionBanner()}
+                        <PdfViewer
+                            pdfData={activePdfData}
+                            mode={mode}
+                            onSymbolSelected={handleSymbolSelected}
+                            onPlaceDot={handlePlaceDot}
+                            onQuickPlaceDot={handleQuickPlaceDot}
+                            onLocationDelete={handleLocationDelete}
+                            onStartReassignPin={handleStartReassignPin}
+                            symbolsToHighlight={symbolsToHighlight}
+                            activeSymbolId={activeSymbolId}
+                            activeSymbolColor={activeSymbolColor}
+                            currentPage={currentPage}
+                            setCurrentPage={setCurrentPage}
+                            onCancelSelection={handleCancelDrawing}
+                            onFinishAreaDrawing={handleFinishAreaDrawing}
+                            areas={areasForCurrentPdf}
+                            drawingPoints={drawingPoints}
+                            onDrawPoint={handleDrawPoint}
+                            measurements={measurementsForCurrentPdf}
+                            scaleInfo={activePdfMetadata?.scaleInfo}
+                            activeDrawingMeasurementId={activeDrawingMeasurementId}
+                            selectedMeasurementId={selectedMeasurementId}
+                            onOpenManualLengthModal={handleOpenManualLengthModal}
+                            onStartCreateLinearComponent={handleStartCreateLinearComponent}
+                            onDeleteMeasurementSegment={handleDeleteMeasurementSegment}
+                            onStartDragMeasurementNode={handleStartDragMeasurementNode}
+                            onUpdateMeasurementPoint={handleUpdateMeasurementPoint}
+                            onEndDragMeasurementNode={handleEndDragMeasurementNode}
+                            pdfOpacity={pdfOpacity}
+                            daliNetworks={activeProject.daliNetworks || []}
+                            daliDevices={activeProject.daliDevices?.filter(d => d.pdfId === activePdfId) || []}
+                            ecdTypes={activeProject.ecdTypes || []}
+                            onPlaceDaliDevice={handlePlaceDaliDevice}
+                            onDeleteDaliDevice={handleDeleteDaliDevice}
+                            onStartEditEcdDevice={handleStartEditEcdDevice}
+                            activeDaliPlacement={activeDaliPlacement}
+                            hoveredDaliNetworkId={hoveredDaliNetworkId}
+                            onDaliNetworkHover={setHoveredDaliNetworkId}
+                            onDaliDevicePickedForPainting={handleDaliDevicePicked}
+                            onDaliPsuPickedForPainting={handleDaliPsuPickedForPainting}
+                            onPaintDaliDevice={handlePaintDaliDevice}
+                            onPaintDaliPsuLocation={handlePaintDaliPsuLocation}
+                            daliDeviceToPaint={daliDeviceToPaint}
+                            daliPsuLocationToPaint={daliPsuLocationToPaint}
+                            showDaliLabels={showDaliLabels}
+                            onPlacePsu={handlePlacePsu}
+                            onDeletePsu={handleDeletePsu}
+                            onStartEditPsuLocation={handleStartEditPsuLocation}
+                            activeDaliPsuPlacementNetworkId={activeDaliPsuPlacementNetworkId}
+                            activePdfId={activePdfId}
+                        />
+                    </main>
+                    <CopySymbolModal
+                        isOpen={!!symbolToCopy}
+                        onClose={handleCloseCopyModal}
+                        onCopy={handleCopySymbols}
+                        symbolToCopy={symbolToCopy}
+                        pdfsInProject={activeProject.pdfs}
+                    />
+                    <AddPdfsModal
+                        isOpen={!!filesToAdd}
+                        onClose={() => setFilesToAdd(null)}
+                        onAdd={handleConfirmAddPdfs}
+                        files={filesToAdd || []}
+                    />
+                    <ExportExcelModal
+                        isOpen={isExportModalOpen}
+                        onClose={() => setIsExportModalOpen(false)}
+                        onConfirm={handleConfirmExport}
+                        isExporting={isLoading}
+                    />
+                    <ExportPdfModal
+                        isOpen={isExportPdfModalOpen}
+                        onClose={() => setIsExportPdfModalOpen(false)}
+                        onConfirm={handleConfirmExportPdfReport}
+                        isExporting={isExportingPdf}
+                    />
+                    <ReassignSymbolModal
+                        isOpen={!!pinToReassign}
+                        onClose={() => setPinToReassign(null)}
+                        onConfirm={handleConfirmReassignPin}
+                        currentSymbol={activeProject.symbols.find(s => s.id === pinToReassign?.symbolId)}
+                        availableSymbols={reassignableSymbols}
+                        disciplines={activeProject.disciplines}
+                    />
+                    <AreaNamingModal
+                        isOpen={isNamingArea}
+                        onClose={handleCancelDrawing}
+                        onConfirm={handleCreateArea}
+                    />
+                    <CountsTableModal
+                        isOpen={isCountsTableOpen}
+                        onClose={() => setIsCountsTableOpen(false)}
+                        project={activeProject}
+                    />
+                    <ScaleModal
+                        isOpen={isScaleModalOpen}
+                        onClose={handleCancelDrawing}
+                        onConfirm={handleConfirmScale}
+                    />
+                    <ManualLengthModal
+                        isOpen={!!editingManualEntry}
+                        onClose={() => setEditingManualEntry(null)}
+                        onConfirm={handleSaveManualLength}
+                        initialLength={manualEntryToEdit?.length}
+                    />
+                    <LinearComponentModal
+                        isOpen={isLinearComponentModalOpen}
+                        onClose={() => setIsLinearComponentModalOpen(false)}
+                        onConfirm={handleConfirmCreateLinearComponent}
+                        project={activeProject}
+                    />
+                    <EcdTypeAssignModal
+                        isOpen={!!editingEcdDevice}
+                        onClose={() => setEditingEcdDevice(null)}
+                        onConfirm={handleAssignEcdTypeToDevice}
+                        ecdTypes={activeProject.ecdTypes || []}
+                        device={editingEcdDevice}
+                    />
+                    <EcdScheduleModal
+                        isOpen={isEcdScheduleModalOpen}
+                        onClose={() => setIsEcdScheduleModalOpen(false)}
+                        ecdTypes={activeProject.ecdTypes || []}
+                        onAdd={handleAddEcdType}
+                        onUpdate={handleUpdateEcdType}
+                        onDelete={handleDeleteEcdType}
+                    />
+                    <PsuLocationModal
+                        isOpen={!!editingPsuNetwork}
+                        onClose={() => setEditingPsuNetwork(null)}
+                        onConfirm={handleSavePsuLocation}
+                        initialLocation={editingPsuNetwork?.psuLocation?.location}
+                    />
+          
+    } catch (error) {
+        console.error('Render error:', error);
+        return <div>Error loading project. Check console for details.</div>;
+    }      </div>
+        );
+    } catch (error) {
+        console.error('Render error:', error);
+        return <div>Error loading project. Check console for details.</div>;
     }
-
-    return (
-        <div className="flex h-screen bg-gray-100 font-sans">
-            <Sidebar
-                projects={projects}
-                activeProject={activeProject}
-                onSwitchProject={handleLoadProject}
-                onCreateNewProject={() => {setActiveProjectId(null); setActivePdfId(null);}}
-                onDeleteProject={handleDeleteProject}
-                onLogout={handleLogout}
-                activePdfId={activePdfId}
-                currentPage={currentPage}
-                onSwitchPdf={handleSwitchPdf}
-                onAddPdfs={handleAddPdfs}
-                onUpdatePdfLevel={handleUpdatePdfLevel}
-                onDeletePdf={handleDeletePdf}
-                onStartManualSelection={startManualSelection}
-                onExportExcel={handleOpenExportModal}
-                onExportPdfReport={handleExportPdfReport}
-                onExportDaliPdfReport={handleExportDaliPdfReport}
-                onViewCounts={() => setIsCountsTableOpen(true)}
-                isExporting={isLoading}
-                isExportingPdf={isExportingPdf}
-                isExportingDaliPdf={isExportingDaliPdf}
-                isLoading={isLoading || isRestoring}
-                mode={mode}
-                onSymbolNameChange={handleSymbolNameChange}
-                onSymbolColorChange={handleSymbolColorChange}
-                onSymbolImageChange={handleSymbolImageChange}
-                onSymbolDelete={handleSymbolDelete}
-                onAddPoints={handleAddPoints}
-                onOpenCopyModal={handleOpenCopyModal}
-                activeSymbolId={activeSymbolId}
-                setActiveSymbolId={handleSetActiveSymbol}
-                onAddDiscipline={handleAddDiscipline}
-                onUpdateDisciplineName={handleUpdateDisciplineName}
-                onAssignDiscipline={handleAssignDiscipline}
-                activeDisciplineId={activeDisciplineId}
-                setActiveDisciplineId={handleSetActiveDiscipline}
-                onDeleteDiscipline={handleDeleteDiscipline}
-                onUpdateDisciplineParent={handleUpdateDisciplineParent}
-                onBackupAll={handleBackupAll}
-                onBackupSingleProject={handleBackupSingleProject}
-                onRestoreAll={handleRestoreAll}
-                onStartAreaDrawing={handleStartAreaDrawing}
-                onDeleteArea={handleDeleteArea}
-                onUpdateArea={handleUpdateArea}
-                onStartSetScale={handleStartSetScale}
-                onStartMeasure={handleStartMeasure}
-                onStartAddToMeasurement={handleStartAddToMeasurement}
-                onUpdateMeasurement={handleUpdateMeasurement}
-                onDeleteMeasurement={handleDeleteMeasurement}
-                measurements={measurementsForCurrentPdf}
-                measurementGroups={activeProject.measurementGroups}
-                onAddMeasurementGroup={handleAddMeasurementGroup}
-                onUpdateMeasurementGroupName={handleUpdateMeasurementGroupName}
-                onDeleteMeasurementGroup={handleDeleteMeasurementGroup}
-                onAssignMeasurementToGroup={handleAssignMeasurementToGroup}
-                onUpdateMeasurementGroupParent={handleUpdateMeasurementGroupParent}
-                scaleInfo={activePdfMetadata?.scaleInfo}
-                selectedMeasurementId={selectedMeasurementId}
-                onSelectMeasurement={handleSelectMeasurementForEditing}
-                onOpenManualLengthModal={handleOpenManualLengthModal}
-                onDeleteManualEntry={handleDeleteManualEntry}
-                pdfOpacity={pdfOpacity}
-                onPdfOpacityChange={handlePdfOpacityChange}
-                onAddDaliNetwork={handleAddDaliNetwork}
-                onUpdateDaliNetwork={handleUpdateDaliNetwork}
-                onDeleteDaliNetwork={handleDeleteDaliNetwork}
-                onStartDaliPlacement={handleStartDaliPlacement}
-                onOpenEcdSchedule={() => setIsEcdScheduleModalOpen(true)}
-                onDaliNetworkHover={setHoveredDaliNetworkId}
-                onStartDaliPaintSelection={handleStartDaliPaintSelection}
-                showDaliLabels={showDaliLabels}
-                onToggleDaliLabels={handleToggleDaliLabels}
-                onStartPlacePsu={handleStartPlacePsu}
-                onDeletePsu={handleDeletePsu}
-                onRenumberDaliNetwork={handleRenumberDaliNetwork}
-                onSaveDaliNetworkAsTemplate={handleSaveDaliNetworkAsTemplate}
-            />
-            <main className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200 overflow-auto">
-                {error && <div className="absolute top-4 bg-red-500 text-white p-3 rounded-lg shadow-lg z-50 animate-pulse" onClick={() => setError(null)}>{error}</div>}
-                {getSelectionBanner()}
-                <PdfViewer
-                    pdfData={activePdfData}
-                    mode={mode}
-                    onSymbolSelected={handleSymbolSelected}
-                    onPlaceDot={handlePlaceDot}
-                    onQuickPlaceDot={handleQuickPlaceDot}
-                    onLocationDelete={handleLocationDelete}
-                    onStartReassignPin={handleStartReassignPin}
-                    symbolsToHighlight={symbolsToHighlight}
-                    activeSymbolId={activeSymbolId}
-                    activeSymbolColor={activeSymbolColor}
-                    currentPage={currentPage}
-                    setCurrentPage={setCurrentPage}
-                    onCancelSelection={handleCancelDrawing}
-                    onFinishAreaDrawing={handleFinishAreaDrawing}
-                    areas={areasForCurrentPdf}
-                    drawingPoints={drawingPoints}
-                    onDrawPoint={handleDrawPoint}
-                    measurements={measurementsForCurrentPdf}
-                    scaleInfo={activePdfMetadata?.scaleInfo}
-                    activeDrawingMeasurementId={activeDrawingMeasurementId}
-                    selectedMeasurementId={selectedMeasurementId}
-                    onOpenManualLengthModal={handleOpenManualLengthModal}
-                    onStartCreateLinearComponent={handleStartCreateLinearComponent}
-                    onDeleteMeasurementSegment={handleDeleteMeasurementSegment}
-                    onStartDragMeasurementNode={handleStartDragMeasurementNode}
-                    onUpdateMeasurementPoint={handleUpdateMeasurementPoint}
-                    onEndDragMeasurementNode={handleEndDragMeasurementNode}
-                    pdfOpacity={pdfOpacity}
-                    daliNetworks={activeProject.daliNetworks || []}
-                    daliDevices={activeProject.daliDevices?.filter(d => d.pdfId === activePdfId) || []}
-                    ecdTypes={activeProject.ecdTypes || []}
-                    onPlaceDaliDevice={handlePlaceDaliDevice}
-                    onDeleteDaliDevice={handleDeleteDaliDevice}
-                    onStartEditEcdDevice={handleStartEditEcdDevice}
-                    activeDaliPlacement={activeDaliPlacement}
-                    hoveredDaliNetworkId={hoveredDaliNetworkId}
-                    onDaliNetworkHover={setHoveredDaliNetworkId}
-                    onDaliDevicePickedForPainting={handleDaliDevicePicked}
-                    onDaliPsuPickedForPainting={handleDaliPsuPickedForPainting}
-                    onPaintDaliDevice={handlePaintDaliDevice}
-                    onPaintDaliPsuLocation={handlePaintDaliPsuLocation}
-                    daliDeviceToPaint={daliDeviceToPaint}
-                    daliPsuLocationToPaint={daliPsuLocationToPaint}
-                    showDaliLabels={showDaliLabels}
-                    onPlacePsu={handlePlacePsu}
-                    onDeletePsu={handleDeletePsu}
-                    onStartEditPsuLocation={handleStartEditPsuLocation}
-                    activeDaliPsuPlacementNetworkId={activeDaliPsuPlacementNetworkId}
-                    activePdfId={activePdfId}
-                />
-            </main>
-            <CopySymbolModal
-                isOpen={!!symbolToCopy}
-                onClose={handleCloseCopyModal}
-                onCopy={handleCopySymbols}
-                symbolToCopy={symbolToCopy}
-                pdfsInProject={activeProject.pdfs}
-            />
-            <AddPdfsModal
-                isOpen={!!filesToAdd}
-                onClose={() => setFilesToAdd(null)}
-                onAdd={handleConfirmAddPdfs}
-                files={filesToAdd || []}
-            />
-            <ExportExcelModal
-                isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
-                onConfirm={handleConfirmExport}
-                isExporting={isLoading}
-            />
-            <ExportPdfModal
-                isOpen={isExportPdfModalOpen}
-                onClose={() => setIsExportPdfModalOpen(false)}
-                onConfirm={handleConfirmExportPdfReport}
-                isExporting={isExportingPdf}
-            />
-            <ReassignSymbolModal
-                isOpen={!!pinToReassign}
-                onClose={() => setPinToReassign(null)}
-                onConfirm={handleConfirmReassignPin}
-                currentSymbol={activeProject.symbols.find(s => s.id === pinToReassign?.symbolId)}
-                availableSymbols={reassignableSymbols}
-                disciplines={activeProject.disciplines}
-            />
-            <AreaNamingModal
-                isOpen={isNamingArea}
-                onClose={handleCancelDrawing}
-                onConfirm={handleCreateArea}
-            />
-            <CountsTableModal
-                isOpen={isCountsTableOpen}
-                onClose={() => setIsCountsTableOpen(false)}
-                project={activeProject}
-            />
-            <ScaleModal
-                isOpen={isScaleModalOpen}
-                onClose={handleCancelDrawing}
-                onConfirm={handleConfirmScale}
-            />
-            <ManualLengthModal
-                isOpen={!!editingManualEntry}
-                onClose={() => setEditingManualEntry(null)}
-                onConfirm={handleSaveManualLength}
-                initialLength={manualEntryToEdit?.length}
-            />
-            <LinearComponentModal
-                isOpen={isLinearComponentModalOpen}
-                onClose={() => setIsLinearComponentModalOpen(false)}
-                onConfirm={handleConfirmCreateLinearComponent}
-                project={activeProject}
-            />
-            <EcdTypeAssignModal
-                isOpen={!!editingEcdDevice}
-                onClose={() => setEditingEcdDevice(null)}
-                onConfirm={handleAssignEcdTypeToDevice}
-                ecdTypes={activeProject.ecdTypes || []}
-                device={editingEcdDevice}
-            />
-            <EcdScheduleModal
-                isOpen={isEcdScheduleModalOpen}
-                onClose={() => setIsEcdScheduleModalOpen(false)}
-                ecdTypes={activeProject.ecdTypes || []}
-                onAdd={handleAddEcdType}
-                onUpdate={handleUpdateEcdType}
-                onDelete={handleDeleteEcdType}
-            />
-            <PsuLocationModal
-                isOpen={!!editingPsuNetwork}
-                onClose={() => setEditingPsuNetwork(null)}
-                onConfirm={handleSavePsuLocation}
-                initialLocation={editingPsuNetwork?.psuLocation?.location}
-            />
-        </div>
-    );
 };
 
 export default App;
