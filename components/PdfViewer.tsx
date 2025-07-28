@@ -1343,8 +1343,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         const newScrollLeft = (pointOnContentX * newScale / oldScale) - mouseX;
         const newScrollTop = (pointOnContentY * newScale / oldScale) - mouseY;
 
-        scrollTargetRef.current = { left: newScrollLeft, top: newScrollTop };
         setScale(newScale);
+        scrollTargetRef.current = { left: newScrollLeft, top: newScrollTop };
     };
     
     const getCursor = () => {
