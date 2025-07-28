@@ -81,13 +81,24 @@ export const projectService = {
 
     async saveProject(username: string, project: Project): Promise<void> {
         try {
-            await fetch(`${API_BASE_URL}/api/projects/${project.id}`, {
+            console.log('Saving project:', project.id, project.name);
+            const response = await fetch(`${API_BASE_URL}/api/projects/${project.id}`, {
                 method: 'PUT',
-                headers: getAuthHeaders(),
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ data: project })
             });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to save project: ${response.status} ${response.statusText}`);
+            }
+            
+            console.log('Project saved successfully');
         } catch (error) {
             console.error('Error saving project:', error);
+            throw error;
         }
     },
 

@@ -43,17 +43,21 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     try {
+        const { id } = req.params;
         const { data } = req.body;
+        
+        console.log('Updating project:', id);
         
         const result = await pool.query(
             'UPDATE projects SET data = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 RETURNING *',
-            [JSON.stringify(data), req.params.id, req.user.userId]
+            [JSON.stringify(data), id, req.user.userId]
         );
         
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Project not found' });
         }
         
+        console.log('Project updated successfully');
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Update project error:', error);
