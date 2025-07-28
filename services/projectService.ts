@@ -20,7 +20,22 @@ export const projectService = {
             });
             
             if (!response.ok) throw new Error('Failed to fetch projects');
-            return await response.json();
+            const projects = await response.json();
+            
+            // Ensure each project has all required arrays
+            return projects.map(project => ({
+                ...project,
+                pdfs: project.pdfs || [],
+                symbols: project.symbols || [],
+                disciplines: project.disciplines || [],
+                areas: project.areas || [],
+                measurements: project.measurements || [],
+                measurementGroups: project.measurementGroups || [],
+                daliNetworks: project.daliNetworks || [],
+                daliDevices: project.daliDevices || [],
+                ecdTypes: project.ecdTypes || [],
+                daliNetworkTemplates: project.daliNetworkTemplates || []
+            }));
         } catch (error) {
             console.error('Error fetching projects:', error);
             return [];

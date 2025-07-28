@@ -89,9 +89,11 @@ const App: React.FC = () => {
     const [redoStack, setRedoStack] = useState<Project[]>([]);
 
     const activeProject = useMemo(() => {
-    if (!Array.isArray(projects) || !activeProjectId) return undefined;
-    return projects.find(p => p.id === activeProjectId);
-}, [projects, activeProjectId]);
+        if (!Array.isArray(projects) || !activeProjectId) return undefined;
+        const project = projects.find(p => p.id === activeProjectId);
+        console.log('Active project:', project); // Debug log
+        return project;
+    }, [projects, activeProjectId]);
     const activePdfMetadata = useMemo(() => activeProject?.pdfs.find(p => p.id === activePdfId), [activeProject, activePdfId]);
 
     const commitUpdate = (newProjectState: Project, fromUndoRedo: boolean = false) => {
@@ -196,6 +198,7 @@ const App: React.FC = () => {
     } else {
         setIsLoading(true);
         projectService.getProjects().then(projects => {
+            console.log('Loaded projects:', projects); // Debug log
             // Ensure projects is always an array
             setProjects(Array.isArray(projects) ? projects : []);
             setIsLoading(false);
