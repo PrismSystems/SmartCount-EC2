@@ -88,7 +88,10 @@ const App: React.FC = () => {
     const [undoStack, setUndoStack] = useState<Project[]>([]);
     const [redoStack, setRedoStack] = useState<Project[]>([]);
 
-    const activeProject = useMemo(() => projects.find(p => p.id === activeProjectId), [projects, activeProjectId]);
+    const activeProject = useMemo(() => {
+    if (!Array.isArray(projects) || !activeProjectId) return undefined;
+    return projects.find(p => p.id === activeProjectId);
+}, [projects, activeProjectId]);
     const activePdfMetadata = useMemo(() => activeProject?.pdfs.find(p => p.id === activePdfId), [activeProject, activePdfId]);
 
     const commitUpdate = (newProjectState: Project, fromUndoRedo: boolean = false) => {
@@ -185,17 +188,24 @@ const App: React.FC = () => {
     }, [mode, drawingPoints, handleUndo, handleRedo]);
 
 
-    useEffect(() => {
-        if (!currentUser) {
-            setActiveProjectId(null);
-            setActivePdfId(null);
-            setProjects([]);
-        } else {
-            setIsLoading(true);
-            setProjects(projectService.getProjects(currentUser));
+  useEffect(() => {
+    if (!currentUser) {
+        setActiveProjectId(null);
+        setActivePdfId(null);
+        setProjects([]);
+    } else {
+        setIsLoading(true);
+        projectService.getProjects().then(projects => {
+            // Ensure projects is always an array
+            setProjects(Array.isArray(projects) ? projects : []);
             setIsLoading(false);
-        }
-    }, [currentUser]);
+        }).catch(error => {
+            console.error('Failed to load projects:', error);
+            setProjects([]);
+            setIsLoading(false);
+        });
+    }
+}, [currentUser]);
 
     // Fetch PDF data from IndexedDB when active PDF changes
     useEffect(() => {
