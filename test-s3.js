@@ -1,5 +1,8 @@
-require('dotenv').config({ path: './server/.env' });
-const AWS = require('aws-sdk');
+import dotenv from 'dotenv';
+import AWS from 'aws-sdk';
+
+// Load environment variables
+dotenv.config({ path: './server/.env' });
 
 // Configure AWS
 const s3 = new AWS.S3({
