@@ -125,5 +125,37 @@ export const projectService = {
             console.error('Error fetching PDF:', error);
             return null;
         }
+    },
+
+    async addPdfsToProject(username: string, project: Project, filesWithLevels: { file: File, level: string }[]): Promise<Project> {
+        try {
+            // Upload PDFs
+            const newPdfs = [];
+            for (const { file, level } of filesWithLevels) {
+                const formData = new FormData();
+                formData.append('pdf', file);
+                formData.append('projectId', project.id);
+                formData.append('name', file.name);
+                formData.append('level', level);
+                
+                const pdfResponse = await fetch(`${API_BASE_URL}/api/pdfs/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+                    body: formData
+                });
+                
+                const pdf = await pdfResponse.json();
+                newPdfs.push(pdf);
+            }
+            
+            // Return updated project with new PDFs
+            return {
+                ...project,
+                pdfs: [...project.pdfs, ...newPdfs]
+            };
+        } catch (error) {
+            console.error('Error adding PDFs to project:', error);
+            throw error;
+        }
     }
 };
