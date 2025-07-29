@@ -19,6 +19,32 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
     const [templateId, setTemplateId] = useState<string | null>(null);
     const [error, setError] = useState('');
     
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        setNewProjectFiles(files);
+        setNewProjectLevels(new Array(files.length).fill(''));
+    };
+
+    const handleCreate = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newProjectName.trim()) {
+            setError('Please enter a project name');
+            return;
+        }
+        if (newProjectFiles.length === 0) {
+            setError('Please select at least one PDF file');
+            return;
+        }
+        
+        const filesWithLevels = newProjectFiles.map((file, index) => ({
+            file,
+            level: newProjectLevels[index] || `L${String(index + 1).padStart(2, '0')}`
+        }));
+        
+        onCreate(newProjectName, filesWithLevels, templateId);
+        setError('');
+    };
+
     const sortedProjects = [...projects].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
