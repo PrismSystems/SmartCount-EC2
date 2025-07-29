@@ -95,9 +95,9 @@ export const SymbolCard: React.FC<SymbolCardProps> = ({
                 canvas.width = width;
                 canvas.height = height;
                 
-                // Draw and compress
+                // Draw and compress to PNG instead of JPEG
                 ctx?.drawImage(img, 0, 0, width, height);
-                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                const compressedDataUrl = canvas.toDataURL('image/png', 0.8);
                 resolve(compressedDataUrl);
             };
             

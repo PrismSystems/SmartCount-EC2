@@ -7,6 +7,30 @@ import { measurementService } from './measurementService';
 // Since pdf-lib is loaded from a script tag, we declare its global variable.
 declare const PDFLib: any;
 
+const convertToPng = (dataUrl: string, width: number, height: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            canvas.width = width;
+            canvas.height = height;
+            
+            if (ctx) {
+                ctx.drawImage(img, 0, 0, width, height);
+                const pngDataUrl = canvas.toDataURL('image/png');
+                resolve(pngDataUrl);
+            } else {
+                reject(new Error('Could not get canvas context'));
+            }
+        };
+        
+        img.onerror = reject;
+        img.src = dataUrl;
+    });
+};
+
 /**
  * Converts an SVG data URL to a PNG data URL.
  * This is necessary because pdf-lib cannot embed SVG images directly.
@@ -433,12 +457,16 @@ export const exportMarkedUpPdf = async (
                     continue;
                 }
                 
-                if (symbol.image.startsWith('data:image/svg+xml')) {
-                    const pngDataUrl = await svgToPngDataUrl(symbol.image, IMG_SIZE, IMG_SIZE);
-                    imageBytes = pngDataUrl.split(',')[1];
-                } else {
-                    imageBytes = symbol.image.split(',')[1];
+                let finalImageData = symbol.image;
+                
+                // Convert JPEG to PNG if needed
+                if (symbol.image.startsWith('data:image/jpeg')) {
+                    finalImageData = await convertToPng(symbol.image, IMG_SIZE, IMG_SIZE);
+                } else if (symbol.image.startsWith('data:image/svg+xml')) {
+                    finalImageData = await svgToPngDataUrl(symbol.image, IMG_SIZE, IMG_SIZE);
                 }
+                
+                imageBytes = finalImageData.split(',')[1];
                 const embeddedImage = await pdfDoc.embedPng(imageBytes);
                 page.drawImage(embeddedImage, {
                     x: legendX + PADDING,
