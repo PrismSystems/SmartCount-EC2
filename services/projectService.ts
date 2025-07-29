@@ -168,5 +168,24 @@ export const projectService = {
             console.error('Error adding PDFs to project:', error);
             throw error;
         }
+    },
+
+    async deleteProject(username: string, projectId: string): Promise<void> {
+        try {
+            console.log('Deleting project:', projectId);
+            const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to delete project: ${response.status} ${response.statusText}`);
+            }
+            
+            console.log('Project deleted successfully');
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            throw error;
+        }
     }
 };

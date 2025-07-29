@@ -84,6 +84,35 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// DELETE /api/projects/:id - Delete project
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('Deleting project:', id);
+        
+        // First delete associated PDFs
+        await pool.query('DELETE FROM pdfs WHERE project_id = $1', [id]);
+        
+        // Then delete the project
+        const result = await pool.query(
+            'DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING *',
+            [id, req.user.userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        
+        console.log('Project deleted successfully');
+        res.json({ message: 'Project deleted successfully' });
+    } catch (error) {
+        console.error('Delete project error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 export default router;
+
 
 
