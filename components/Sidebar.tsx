@@ -83,6 +83,8 @@ interface SidebarProps {
     onDeletePsu: (networkId: string) => void;
     onRenumberDaliNetwork: (networkId: string) => void;
     onSaveDaliNetworkAsTemplate: (networkId: string) => void;
+    isAdmin?: boolean;
+    onShowAdminPanel?: () => void;
 }
 
 const ProjectsDropdown: React.FC<{
@@ -956,8 +958,9 @@ const DaliManager: React.FC<{
 };
 
 
-export const Sidebar: React.FC<SidebarProps> = (props) => {
-    const { activeProject, activePdfId, measurements, mode, scaleInfo, pdfOpacity, onPdfOpacityChange, currentPage, onExportDaliPdfReport, isExportingDaliPdf } = props;
+export const Sidebar: React.FC<SidebarProps> = ({ 
+    projects, activeProject, activePdfId, measurements, mode, scaleInfo, pdfOpacity, onPdfOpacityChange, currentPage, onExportDaliPdfReport, isExportingDaliPdf, isAdmin, onShowAdminPanel, onLogout
+}) => {
     const areasForActivePdf = activeProject.areas.filter(a => a.pdfId === activePdfId);
 
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['symbols', 'measurements', 'areas', 'dali', 'viewerSettings']));
@@ -978,12 +981,12 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
         <aside className="w-96 bg-white h-full flex flex-col p-4 border-r border-gray-200 shadow-md">
             <div className="mb-4">
                  <ProjectsDropdown
-                    projects={props.projects}
-                    activeProject={props.activeProject}
-                    onSwitchProject={props.onSwitchProject}
-                    onCreateNew={props.onCreateNewProject}
-                    onDeleteProject={props.onDeleteProject}
-                    onLogout={props.onLogout}
+                    projects={projects}
+                    activeProject={activeProject}
+                    onSwitchProject={onSwitchProject}
+                    onCreateNew={onCreateNewProject}
+                    onDeleteProject={onDeleteProject}
+                    onLogout={onLogout}
                  />
             </div>
             
@@ -998,10 +1001,10 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                             <PdfSwitcher
                                 pdfs={activeProject.pdfs}
                                 activePdfId={activePdfId}
-                                onSwitchPdf={props.onSwitchPdf}
-                                onAddPdfs={props.onAddPdfs}
-                                onUpdatePdfLevel={props.onUpdatePdfLevel}
-                                onDeletePdf={props.onDeletePdf}
+                                onSwitchPdf={onSwitchPdf}
+                                onAddPdfs={onAddPdfs}
+                                onUpdatePdfLevel={onUpdatePdfLevel}
+                                onDeletePdf={onDeletePdf}
                             />
                         </div>
                     )}
@@ -1042,28 +1045,28 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                     {!collapsedSections.has('dali') && (
                         <div className="pt-2 px-1">
                             <DaliManager
-                                networks={props.activeProject.daliNetworks || []}
-                                devices={props.activeProject.daliDevices || []}
-                                ecdTypes={props.activeProject.ecdTypes || []}
-                                daliNetworkTemplates={props.activeProject.daliNetworkTemplates || []}
-                                onAddDaliNetwork={props.onAddDaliNetwork}
-                                onUpdateDaliNetwork={props.onUpdateDaliNetwork}
-                                onDeleteDaliNetwork={props.onDeleteDaliNetwork}
-                                onStartDaliPlacement={props.onStartDaliPlacement}
+                                networks={activeProject.daliNetworks || []}
+                                devices={activeProject.daliDevices || []}
+                                ecdTypes={activeProject.ecdTypes || []}
+                                daliNetworkTemplates={activeProject.daliNetworkTemplates || []}
+                                onAddDaliNetwork={onAddDaliNetwork}
+                                onUpdateDaliNetwork={onUpdateDaliNetwork}
+                                onDeleteDaliNetwork={onDeleteDaliNetwork}
+                                onStartDaliPlacement={onStartDaliPlacement}
                                 onExportDaliPdfReport={onExportDaliPdfReport}
                                 isExportingDaliPdf={isExportingDaliPdf}
                                 activePdfId={activePdfId}
                                 currentPage={currentPage}
-                                mode={props.mode}
-                                onOpenEcdSchedule={props.onOpenEcdSchedule}
-                                onDaliNetworkHover={props.onDaliNetworkHover}
-                                onStartDaliPaintSelection={props.onStartDaliPaintSelection}
-                                showDaliLabels={props.showDaliLabels}
-                                onToggleDaliLabels={props.onToggleDaliLabels}
-                                onStartPlacePsu={props.onStartPlacePsu}
-                                onDeletePsu={props.onDeletePsu}
-                                onRenumberDaliNetwork={props.onRenumberDaliNetwork}
-                                onSaveDaliNetworkAsTemplate={props.onSaveDaliNetworkAsTemplate}
+                                mode={mode}
+                                onOpenEcdSchedule={onOpenEcdSchedule}
+                                onDaliNetworkHover={onDaliNetworkHover}
+                                onStartDaliPaintSelection={onStartDaliPaintSelection}
+                                showDaliLabels={showDaliLabels}
+                                onToggleDaliLabels={onToggleDaliLabels}
+                                onStartPlacePsu={onStartPlacePsu}
+                                onDeletePsu={onDeletePsu}
+                                onRenumberDaliNetwork={onRenumberDaliNetwork}
+                                onSaveDaliNetworkAsTemplate={onSaveDaliNetworkAsTemplate}
                             />
                         </div>
                     )}
@@ -1079,23 +1082,23 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                         <div className="pt-2 px-1">
                             <MeasurementManager
                                 measurements={measurements}
-                                measurementGroups={props.activeProject.measurementGroups || []}
+                                measurementGroups={activeProject.measurementGroups || []}
                                 scaleInfo={scaleInfo}
-                                onStartSetScale={props.onStartSetScale}
-                                onStartMeasure={props.onStartMeasure}
-                                onStartAddToMeasurement={props.onStartAddToMeasurement}
-                                onUpdateMeasurement={props.onUpdateMeasurement}
-                                onDeleteMeasurement={props.onDeleteMeasurement}
+                                onStartSetScale={onStartSetScale}
+                                onStartMeasure={onStartMeasure}
+                                onStartAddToMeasurement={onStartAddToMeasurement}
+                                onUpdateMeasurement={onUpdateMeasurement}
+                                onDeleteMeasurement={onDeleteMeasurement}
                                 mode={mode}
-                                selectedMeasurementId={props.selectedMeasurementId}
-                                onSelectMeasurement={props.onSelectMeasurement}
-                                onOpenManualLengthModal={props.onOpenManualLengthModal}
-                                onDeleteManualEntry={props.onDeleteManualEntry}
-                                onAddMeasurementGroup={props.onAddMeasurementGroup}
-                                onUpdateMeasurementGroupName={props.onUpdateMeasurementGroupName}
-                                onDeleteMeasurementGroup={props.onDeleteMeasurementGroup}
-                                onAssignMeasurementToGroup={props.onAssignMeasurementToGroup}
-                                onUpdateMeasurementGroupParent={props.onUpdateMeasurementGroupParent}
+                                selectedMeasurementId={selectedMeasurementId}
+                                onSelectMeasurement={onSelectMeasurement}
+                                onOpenManualLengthModal={onOpenManualLengthModal}
+                                onDeleteManualEntry={onDeleteManualEntry}
+                                onAddMeasurementGroup={onAddMeasurementGroup}
+                                onUpdateMeasurementGroupName={onUpdateMeasurementGroupName}
+                                onDeleteMeasurementGroup={onDeleteMeasurementGroup}
+                                onAssignMeasurementToGroup={onAssignMeasurementToGroup}
+                                onUpdateMeasurementGroupParent={onUpdateMeasurementGroupParent}
                             />
                         </div>
                     )}
@@ -1110,9 +1113,9 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                         <div className="pt-2 px-1">
                             <AreaManager 
                                 areas={areasForActivePdf}
-                                onStartAreaDrawing={props.onStartAreaDrawing}
-                                onDeleteArea={props.onDeleteArea}
-                                onUpdateArea={props.onUpdateArea}
+                                onStartAreaDrawing={onStartAreaDrawing}
+                                onDeleteArea={onDeleteArea}
+                                onUpdateArea={onUpdateArea}
                                 mode={mode}
                             />
                         </div>
@@ -1126,32 +1129,32 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                     </button>
                     {!collapsedSections.has('symbols') && (
                          <SymbolsAndDisciplinesManager
-                            activeProject={props.activeProject}
-                            activePdfId={props.activePdfId}
-                            onStartManualSelection={props.onStartManualSelection}
-                            onExportExcel={props.onExportExcel}
-                            onExportPdfReport={props.onExportPdfReport}
-                            onViewCounts={props.onViewCounts}
-                            isExporting={props.isExporting}
-                            isExportingPdf={props.isExportingPdf}
-                            isLoading={props.isLoading}
-                            mode={props.mode}
-                            onSymbolNameChange={props.onSymbolNameChange}
-                            onSymbolColorChange={props.onSymbolColorChange}
-                            onSymbolImageChange={props.onSymbolImageChange}
-                            onSymbolDelete={props.onSymbolDelete}
-                            onAddPoints={props.onAddPoints}
-                            onOpenCopyModal={props.onOpenCopyModal}
-                            activeSymbolId={props.activeSymbolId}
-                            setActiveSymbolId={props.setActiveSymbolId}
-                            onAddDiscipline={props.onAddDiscipline}
-                            onUpdateDisciplineName={props.onUpdateDisciplineName}
-                            onAssignDiscipline={props.onAssignDiscipline}
-                            activeDisciplineId={props.activeDisciplineId}
-                            setActiveDisciplineId={props.setActiveDisciplineId}
-                            onDeleteDiscipline={props.onDeleteDiscipline}
-                            onUpdateDisciplineParent={props.onUpdateDisciplineParent}
-                            measurements={props.measurements}
+                            activeProject={activeProject}
+                            activePdfId={activePdfId}
+                            onStartManualSelection={onStartManualSelection}
+                            onExportExcel={onExportExcel}
+                            onExportPdfReport={onExportPdfReport}
+                            onViewCounts={onViewCounts}
+                            isExporting={isExporting}
+                            isExportingPdf={isExportingPdf}
+                            isLoading={isLoading}
+                            mode={mode}
+                            onSymbolNameChange={onSymbolNameChange}
+                            onSymbolColorChange={onSymbolColorChange}
+                            onSymbolImageChange={onSymbolImageChange}
+                            onSymbolDelete={onSymbolDelete}
+                            onAddPoints={onAddPoints}
+                            onOpenCopyModal={onOpenCopyModal}
+                            activeSymbolId={activeSymbolId}
+                            setActiveSymbolId={setActiveSymbolId}
+                            onAddDiscipline={onAddDiscipline}
+                            onUpdateDisciplineName={onUpdateDisciplineName}
+                            onAssignDiscipline={onAssignDiscipline}
+                            activeDisciplineId={activeDisciplineId}
+                            setActiveDisciplineId={setActiveDisciplineId}
+                            onDeleteDiscipline={onDeleteDiscipline}
+                            onUpdateDisciplineParent={onUpdateDisciplineParent}
+                            measurements={measurements}
                          />
                     )}
                 </div>

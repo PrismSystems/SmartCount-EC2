@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 import {App_Name, App_Tag_Line} from "@/constants.ts";
 
 interface AuthScreenProps {
-    onLoginSuccess: (email: string) => void;
+    onLoginSuccess: (email: string, isAdmin: boolean) => void;
 }
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
@@ -37,8 +37,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             }
         } else {
             const res = await authService.login(email, password);
-            if (res.success) {
-                onLoginSuccess(email);
+            if (res.success && res.user) {
+                onLoginSuccess(res.user.email, res.user.isAdmin);
             } else {
                 setError(res.message);
             }
