@@ -187,5 +187,93 @@ export const projectService = {
             console.error('Error deleting project:', error);
             throw error;
         }
-    }
+    },
+
+    async exportAllBackup(username: string): Promise<void> {
+        try {
+            const projects = await this.getProjects();
+            const backup = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                username,
+                projects
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `smartcount-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error creating backup:', error);
+            throw error;
+        }
+    },
+
+    async exportSingleProjectBackup(username: string, projectId: string): Promise<void> {
+        try {
+            const projects = await this.getProjects();
+            const project = projects.find(p => p.id === projectId);
+            if (!project) throw new Error('Project not found');
+            
+            const backup = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                username,
+                type: 'single-project',
+                project
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `smartcount-project-${project.name}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error creating project backup:', error);
+            throw error;
+        }
+    },
+
+    async importAllBackup(username: string, file: File): Promise<{ success: boolean; message: string }> {
+        try {
+            const text = await file.text();
+            const backup = JSON.parse(text);
+            
+            if (!backup.projects || !Array.isArray(backup.projects)) {
+                return { success: false, message: 'Invalid backup file format' };
+            }
+            
+            // This would require server-side implementation to restore all projects
+            return { success: false, message: 'Full backup restore not implemented yet' };
+        } catch (error) {
+            console.error('Error importing backup:', error);
+            return { success: false, message: 'Failed to parse backup file' };
+        }
+    },
+
+    async importSingleProjectBackup(username: string, file: File): Promise<{ success: boolean; message: string }> {
+        try {
+            const text = await file.text();
+            const backup = JSON.parse(text);
+            
+            if (!backup.project) {
+                return { success: false, message: 'Invalid project backup file format' };
+            }
+            
+            // This would require server-side implementation to restore the project
+            return { success: false, message: 'Single project restore not implemented yet' };
+        } catch (error) {
+            console.error('Error importing project backup:', error);
+            return { success: false, message: 'Failed to parse backup file' };
+        }
+    },
 };
