@@ -72,7 +72,43 @@ export const projectService = {
                 pdfs.push(pdf);
             }
             
-            return { ...project, pdfs };
+            // Create default project structure
+            let projectData = {
+                ...project,
+                pdfs,
+                symbols: [],
+                disciplines: [{
+                    id: `disc_electrical_${Date.now()}`,
+                    name: 'Electrical',
+                    parentId: null
+                }],
+                areas: [],
+                measurements: [],
+                measurementGroups: [],
+                daliNetworks: [],
+                daliDevices: [],
+                ecdTypes: [],
+                daliNetworkTemplates: []
+            };
+            
+            // Apply template if provided
+            if (templateId) {
+                const projects = await this.getProjects();
+                const template = projects.find(p => p.id === templateId);
+                if (template) {
+                    projectData = {
+                        ...projectData,
+                        disciplines: template.disciplines || projectData.disciplines,
+                        ecdTypes: template.ecdTypes || [],
+                        daliNetworkTemplates: template.daliNetworkTemplates || []
+                    };
+                }
+            }
+            
+            // Save the initial project data
+            await this.saveProject(username, projectData);
+            
+            return projectData;
         } catch (error) {
             console.error('Error creating project:', error);
             throw error;
