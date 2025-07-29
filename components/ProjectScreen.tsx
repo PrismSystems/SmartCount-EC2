@@ -126,10 +126,11 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 >
                                     <option value="">No Template</option>
-                                    {sortedProjects.map(p => (
+                                    {projects.map(p => (
                                         <option key={p.id} value={p.id}>{p.name}</option>
                                     ))}
                                 </select>
+                                <p className="text-xs text-gray-500 mt-1">Copy disciplines, ECD types, and DALI templates from an existing project</p>
                             </div>
                             <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all shadow-md">
                                 Start Project
