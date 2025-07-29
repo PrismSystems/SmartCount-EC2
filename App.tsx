@@ -24,7 +24,9 @@ import { LINEAR_DISCIPLINE_NAME } from './constants';
 import { EcdTypeAssignModal } from './components/EcdTypeAssignModal';
 import { EcdScheduleModal } from './components/EcdScheduleModal';
 import { PsuLocationModal } from './components/PsuLocationModal';
-
+import { SyncStatus } from './components/SyncStatus';
+import { syncService } from './services/syncService';
+import { offlineService } from './services/offlineService';
 
 const PIN_SIZE = 8; // base size in unscaled units for location pins
 
@@ -1821,6 +1823,51 @@ const App: React.FC = () => {
             const disciplineIds = new Set<string>();
             getAllChildDisciplineIds(activeDisciplineId, disciplineIds);
 
+            return activeProject.symbols.filter(s => 
+                s.disciplineId && 
+                disciplineIds.has(s.disciplineId) && 
+                s.page === currentPage && 
+                s.pdfId === activePdfId
+            );
+        }
+        return [];
+    }, [activeProject, activePdfId, currentPage, mode, activeSymbolId, activeDisciplineId]);
+
+    useEffect(() => {
+        // Initialize offline service
+        offlineService.init();
+        
+        // Try to sync on app start if online
+        if (navigator.onLine) {
+            syncService.syncOfflineActions();
+        }
+    }, []);
+
+    return (
+        <div className="flex h-screen bg-gray-100">
+            <Sidebar 
+                projects={projects}
+                activeProjectId={activeProjectId}
+                onProjectSelect={handleProjectSelect}
+                onNewProject={handleNewProject}
+                onDeleteProject={handleDeleteProject}
+                onLogout={handleLogout}
+            />
+            
+            <div className="flex-1 flex flex-col">
+                {/* Add sync status to header */}
+                <div className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center">
+                    <h1 className="text-xl font-semibold text-gray-900">
+                        {activeProject?.name || 'SmartCount'}
+                    </h1>
+                    <SyncStatus />
+                </div>
+                
+                {/* Rest of your app */}
+            </div>
+        </div>
+    );
+}
             return activeProject.symbols.filter(s => s.disciplineId && disciplineIds.has(s.disciplineId) && s.page === currentPage && s.pdfId === activePdfId);
         }
 

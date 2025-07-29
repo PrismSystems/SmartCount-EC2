@@ -19,6 +19,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/pdfs', pdfRoutes);
 
+// Add health check endpoint
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 // Debug middleware to log all requests
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
