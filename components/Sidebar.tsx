@@ -46,9 +46,6 @@ interface SidebarProps {
     setActiveDisciplineId: (id: string | null) => void;
     onDeleteDiscipline: (disciplineId: string) => void;
     onUpdateDisciplineParent: (disciplineId: string, newParentId: string | null) => void;
-    onBackupAll: () => void;
-    onBackupSingleProject: () => void;
-    onRestoreAll: (file: File) => void;
     onStartAreaDrawing: () => void;
     onDeleteArea: (areaId: string) => void;
     onUpdateArea: (areaId: string, updates: Partial<Area>) => void;
@@ -95,13 +92,9 @@ const ProjectsDropdown: React.FC<{
     onCreateNew: () => void;
     onDeleteProject: (id: string) => void | Promise<void>;
     onLogout: () => void;
-    onBackupAll: () => void;
-    onBackupSingleProject: () => void;
-    onRestoreAll: (file: File) => void;
-}> = ({ projects, activeProject, onSwitchProject, onCreateNew, onDeleteProject, onLogout, onBackupAll, onBackupSingleProject, onRestoreAll }) => {
+}> = ({ projects, activeProject, onSwitchProject, onCreateNew, onDeleteProject, onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const restoreInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -119,21 +112,6 @@ const ProjectsDropdown: React.FC<{
         }
     }
 
-    const handleRestoreClick = () => {
-        restoreInputRef.current?.click();
-    };
-
-    const handleRestoreFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            onRestoreAll(file);
-            if (restoreInputRef.current) {
-                restoreInputRef.current.value = '';
-            }
-        }
-        setIsOpen(false);
-    };
-    
     const sortedProjects = [...projects].sort((a,b) => b.createdAt - a.createdAt);
 
     return (
@@ -165,24 +143,6 @@ const ProjectsDropdown: React.FC<{
                         </button>
                          <button onClick={handleDelete} className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50">
                             Delete Current Project
-                        </button>
-                    </div>
-                    <div className="border-t border-gray-100 p-2">
-                         <button onClick={() => {onBackupSingleProject(); setIsOpen(false);}} className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
-                            Backup This Project
-                        </button>
-                        <button onClick={() => {onBackupAll(); setIsOpen(false);}} className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
-                            Backup All Projects
-                        </button>
-                         <input
-                            type="file"
-                            ref={restoreInputRef}
-                            className="hidden"
-                            accept=".json"
-                            onChange={handleRestoreFileChange}
-                        />
-                        <button onClick={handleRestoreClick} className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
-                            Restore All from Backup...
                         </button>
                     </div>
                     <div className="border-t border-gray-100 p-2">
@@ -1024,9 +984,6 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                     onCreateNew={props.onCreateNewProject}
                     onDeleteProject={props.onDeleteProject}
                     onLogout={props.onLogout}
-                    onBackupAll={props.onBackupAll}
-                    onBackupSingleProject={props.onBackupSingleProject}
-                    onRestoreAll={props.onRestoreAll}
                  />
             </div>
             
