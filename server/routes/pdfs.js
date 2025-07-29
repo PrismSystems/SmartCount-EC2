@@ -81,4 +81,48 @@ router.get('/:id/download', async (req, res) => {
     }
 });
 
+// DELETE /api/pdfs/:id - Delete a specific PDF
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('Deleting PDF:', id);
+        
+        // Get PDF info first to check ownership and get S3 key
+        const result = await pool.query(
+            'SELECT p.*, pr.user_id FROM pdfs p JOIN projects pr ON p.project_id = pr.id WHERE p.id = $1 AND pr.user_id = $2',
+            [id, req.user.userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'PDF not found' });
+        }
+        
+        const pdf = result.rows[0];
+        const key = `${req.user.userId}/${pdf.project_id}/${pdf.id}.pdf`;
+        
+        // Delete from S3
+        try {
+            await s3.deleteObject({
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: key
+            }).promise();
+            console.log('PDF deleted from S3:', key);
+        } catch (s3Error) {
+            console.error('Error deleting from S3:', s3Error);
+            // Continue with database deletion even if S3 deletion fails
+        }
+        
+        // Delete from database
+        await pool.query('DELETE FROM pdfs WHERE id = $1', [id]);
+        
+        console.log('PDF deleted successfully from database');
+        res.json({ message: 'PDF deleted successfully' });
+    } catch (error) {
+        console.error('Delete PDF error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 export default router;
+

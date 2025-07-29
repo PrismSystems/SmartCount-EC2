@@ -225,6 +225,39 @@ export const projectService = {
         }
     },
 
+    async deletePdfFromProject(username: string, projectId: string, pdfId: string): Promise<Project | null> {
+        try {
+            console.log('Deleting PDF from project:', { projectId, pdfId });
+            
+            // Delete the PDF from the server
+            const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to delete PDF: ${response.status} ${response.statusText}`);
+            }
+            
+            // Get the updated project data
+            const projectResponse = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+                headers: getAuthHeaders()
+            });
+            
+            if (!projectResponse.ok) {
+                throw new Error(`Failed to fetch updated project: ${projectResponse.status} ${projectResponse.statusText}`);
+            }
+            
+            const updatedProject = await projectResponse.json();
+            console.log('PDF deleted successfully, updated project:', updatedProject);
+            
+            return updatedProject;
+        } catch (error) {
+            console.error('Error deleting PDF from project:', error);
+            throw error;
+        }
+    },
+
     async exportAllBackup(username: string): Promise<void> {
         try {
             const projects = await this.getProjects();
