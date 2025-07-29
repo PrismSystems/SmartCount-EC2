@@ -15,15 +15,15 @@ router.get('/', async (req, res) => {
         );
         
         const projects = result.rows.map(row => {
-            // Parse the stored project data and merge with basic info
-            const storedData = row.data ? JSON.parse(row.data) : {};
+            // row.data is already an object when using JSONB, no need to parse
+            const storedData = row.data || {};
             
             return {
                 id: row.id,
                 name: row.name,
                 createdAt: new Date(row.created_at).getTime(),
                 updatedAt: new Date(row.updated_at).getTime(),
-                pdfs: row.pdfs[0].id ? row.pdfs : [],
+                pdfs: row.pdfs && row.pdfs[0] && row.pdfs[0].id ? row.pdfs : [],
                 // Include all the project data (symbols, areas, measurements, etc.)
                 symbols: storedData.symbols || [],
                 disciplines: storedData.disciplines || [],
@@ -85,4 +85,5 @@ router.put('/:id', async (req, res) => {
 });
 
 export default router;
+
 
