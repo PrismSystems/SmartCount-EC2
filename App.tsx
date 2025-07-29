@@ -1711,79 +1711,6 @@ const App: React.FC = () => {
         handleCloseCopyModal();
     };
 
-    const handleBackupAll = async () => {
-        if (!currentUser) return;
-        setIsLoading(true);
-        setError(null);
-        try {
-            await projectService.exportAllBackup(currentUser);
-        } catch (err) {
-            console.error("Backup failed:", err);
-            setError((err as Error).message || "Failed to create backup.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleBackupSingleProject = async () => {
-        if (!currentUser || !activeProjectId) return;
-        setIsLoading(true);
-        setError(null);
-        try {
-            await projectService.exportSingleProjectBackup(currentUser, activeProjectId);
-        } catch (err) {
-            console.error("Single project backup failed:", err);
-            setError((err as Error).message || "Failed to create project backup.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleRestoreAll = async (file: File) => {
-        if (!currentUser) return;
-        if (!window.confirm("Restoring from a full backup will overwrite ALL your current projects and data for this user. This cannot be undone. Are you sure you want to continue?")) {
-            return;
-        }
-
-        setIsRestoring(true);
-        setError(null);
-        try {
-            const result = await projectService.importAllBackup(currentUser, file);
-            if (result.success) {
-                alert(result.message); // Alert before reload
-                window.location.reload();
-            } else {
-                setError(result.message);
-            }
-        } catch (err: any) {
-            console.error("Restore failed:", err);
-            setError(err.message || "An unexpected error occurred during restore.");
-        } finally {
-            setIsRestoring(false);
-        }
-    };
-
-    const handleRestoreSingleProject = async (file: File) => {
-        if (!currentUser) return;
-    
-        setIsRestoring(true);
-        setError(null);
-        try {
-            const result = await projectService.importSingleProjectBackup(currentUser, file);
-            if (result.success) {
-                alert(result.message); // Alert before reload
-                window.location.reload();
-            } else {
-                setError(result.message);
-            }
-        } catch (err: any) {
-            console.error("Single project restore failed:", err);
-            setError(err.message || "An unexpected error occurred during project restore.");
-        } finally {
-            setIsRestoring(false);
-        }
-    };
-
     const reassignableSymbols = useMemo(() => {
         if (!pinToReassign || !activeProject || !activePdfId) return [];
 
@@ -1905,7 +1832,12 @@ const App: React.FC = () => {
     }
     
     if (!activeProject) {
-        return <ProjectScreen projects={projects} onCreate={handleCreateProject} onLoad={handleLoadProject} onDelete={handleDeleteProject} onRestoreSingleProject={handleRestoreSingleProject} />;
+        return <ProjectScreen 
+            projects={projects} 
+            onCreate={handleCreateProject} 
+            onLoad={handleLoadProject} 
+            onDelete={handleDeleteProject}
+        />;
     }
     
     const activeSymbolColor = activeProject.symbols?.find(s => s.id === activeSymbolId)?.color;
@@ -1991,9 +1923,6 @@ const App: React.FC = () => {
                 setActiveDisciplineId={handleSetActiveDiscipline}
                 onDeleteDiscipline={handleDeleteDiscipline}
                 onUpdateDisciplineParent={handleUpdateDisciplineParent}
-                onBackupAll={handleBackupAll}
-                onBackupSingleProject={handleBackupSingleProject}
-                onRestoreAll={handleRestoreAll}
                 onStartAreaDrawing={handleStartAreaDrawing}
                 onDeleteArea={handleDeleteArea}
                 onUpdateArea={handleUpdateArea}

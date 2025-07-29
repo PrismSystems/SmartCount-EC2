@@ -7,61 +7,17 @@ import {App_Name, App_Tag_Line} from "@/constants.ts";
 
 interface ProjectScreenProps {
     projects: Project[];
-    onCreate: (name: string, filesWithLevels: { file: File, level: string }[], templateId: string | null) => void;
+    onCreate: (name: string) => void;
     onLoad: (id: string) => void;
-    onDelete: (id: string) => void | Promise<void>;
-    onRestoreSingleProject: (file: File) => void;
+    onDelete: (id: string) => void;
 }
 
-export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate, onLoad, onDelete, onRestoreSingleProject }) => {
+export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate, onLoad, onDelete }) => {
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectFiles, setNewProjectFiles] = useState<File[]>([]);
     const [newProjectLevels, setNewProjectLevels] = useState<string[]>([]);
     const [templateId, setTemplateId] = useState<string | null>(null);
     const [error, setError] = useState('');
-    const restoreInputRef = useRef<HTMLInputElement>(null);
-
-    const handleCreate = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newProjectName.trim()) {
-            setError('Please enter a project name.');
-            return;
-        }
-        if (newProjectFiles.length === 0) {
-            setError('Please select at least one PDF file.');
-            return;
-        }
-        const filesWithLevels = newProjectFiles.map((file, index) => ({
-            file,
-            level: newProjectLevels[index] || ''
-        }));
-        onCreate(newProjectName.trim(), filesWithLevels, templateId);
-        setNewProjectName('');
-        setNewProjectFiles([]);
-        setNewProjectLevels([]);
-        setTemplateId(null);
-        setError('');
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files ? Array.from(e.target.files) : [];
-        setNewProjectFiles(files);
-        setNewProjectLevels(Array(files.length).fill(''));
-    };
-
-    const handleRestoreClick = () => {
-        restoreInputRef.current?.click();
-    };
-
-    const handleRestoreFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            onRestoreSingleProject(file);
-            if (restoreInputRef.current) {
-                restoreInputRef.current.value = '';
-            }
-        }
-    };
     
     const sortedProjects = [...projects].sort((a, b) => b.createdAt - a.createdAt);
 
@@ -141,18 +97,6 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
                     {/* Existing Projects Section */}
                     <div className="bg-white p-8 rounded-2xl shadow-lg">
                          <h2 className="text-2xl font-bold text-gray-700 mb-6">Existing Projects</h2>
-                          <div className="mb-4">
-                            <input
-                                type="file"
-                                ref={restoreInputRef}
-                                className="hidden"
-                                accept=".json"
-                                onChange={handleRestoreFileChange}
-                            />
-                            <button onClick={handleRestoreClick} className="w-full py-2.5 bg-green-600 text-white rounded-lg font-semibold text-md hover:bg-green-700 transition-all shadow-md">
-                                Restore Single Project
-                            </button>
-                         </div>
                          {sortedProjects.length === 0 ? (
                             <div className="text-center text-gray-500 py-10">
                                 <p>You have no saved projects.</p>
