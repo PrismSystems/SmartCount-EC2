@@ -112,19 +112,15 @@ export const SymbolCard: React.FC<SymbolCardProps> = ({
         if (file) {
             try {
                 const compressedImage = await compressImage(file);
-                // Convert compressed data URL back to File
-                const response = await fetch(compressedImage);
-                const blob = await response.blob();
-                const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
-                onImageChange(symbol.id, compressedFile);
+                onImageChange(symbol.id, compressedImage); // This is already a string
             } catch (error) {
                 console.error('Error compressing image:', error);
-                // Fallback to original method
+                // Fallback - convert file to data URL
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const result = event.target?.result as string;
                     if (result) {
-                        onImageChange(symbol.id, file);
+                        onImageChange(symbol.id, result); // Pass string, not File
                     }
                 };
                 reader.readAsDataURL(file);

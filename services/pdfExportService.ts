@@ -417,11 +417,27 @@ export const exportMarkedUpPdf = async (
             const color = hexToRgb(symbol.color);
             let imageBytes;
             try {
+                // Ensure symbol.image is a string
+                if (typeof symbol.image !== 'string') {
+                    console.warn(`Symbol ${symbol.name} has invalid image data, skipping image`);
+                    // Draw a colored rectangle as fallback
+                    page.drawRectangle({
+                        x: legendX + PADDING,
+                        y: rowY + (ROW_HEIGHT - IMG_SIZE) / 2,
+                        width: IMG_SIZE,
+                        height: IMG_SIZE,
+                        color: rgb(color.r, color.g, color.b),
+                        borderColor: rgb(0.5,0.5,0.5),
+                        borderWidth: 0.5,
+                    });
+                    continue;
+                }
+                
                 if (symbol.image.startsWith('data:image/svg+xml')) {
-                     const pngDataUrl = await svgToPngDataUrl(symbol.image, IMG_SIZE, IMG_SIZE);
-                     imageBytes = pngDataUrl.split(',')[1];
+                    const pngDataUrl = await svgToPngDataUrl(symbol.image, IMG_SIZE, IMG_SIZE);
+                    imageBytes = pngDataUrl.split(',')[1];
                 } else {
-                     imageBytes = symbol.image.split(',')[1];
+                    imageBytes = symbol.image.split(',')[1];
                 }
                 const embeddedImage = await pdfDoc.embedPng(imageBytes);
                 page.drawImage(embeddedImage, {
@@ -432,7 +448,7 @@ export const exportMarkedUpPdf = async (
                 });
             } catch(e) {
                 console.warn(`Could not embed image for symbol ${symbol.name}`, e);
-                 page.drawRectangle({
+                page.drawRectangle({
                     x: legendX + PADDING,
                     y: rowY + (ROW_HEIGHT - IMG_SIZE) / 2,
                     width: IMG_SIZE,
@@ -440,7 +456,7 @@ export const exportMarkedUpPdf = async (
                     color: rgb(color.r, color.g, color.b),
                     borderColor: rgb(0.5,0.5,0.5),
                     borderWidth: 0.5,
-                 });
+                });
             }
             
             const text = `${symbol.name}: ${count}`;

@@ -1467,13 +1467,34 @@ const App: React.FC = () => {
         commitUpdate({ ...activeProject, symbols: activeProject.symbols.map(s => s.id === id ? { ...s, color: newColor } : s) });
     };
     
-    const handleSymbolImageChange = (symbolId: string, imageData: string) => {
+    const handleSymbolImageChange = async (symbolId: string, imageData: string | File) => {
         if (!activeProject) return;
+
+        let finalImageData: string;
+        
+        // If imageData is a File, convert it to data URL
+        if (imageData instanceof File) {
+            finalImageData = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const result = event.target?.result as string;
+                    if (result) {
+                        resolve(result);
+                    } else {
+                        reject(new Error('Failed to read file'));
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(imageData);
+            });
+        } else {
+            finalImageData = imageData;
+        }
 
         const newProject = {
             ...activeProject,
             symbols: activeProject.symbols.map(s =>
-                s.id === symbolId ? { ...s, image: imageData } : s
+                s.id === symbolId ? { ...s, image: finalImageData } : s
             )
         };
         commitUpdate(newProject);
