@@ -1467,27 +1467,16 @@ const App: React.FC = () => {
         commitUpdate({ ...activeProject, symbols: activeProject.symbols.map(s => s.id === id ? { ...s, color: newColor } : s) });
     };
     
-    const handleSymbolImageChange = (symbolId: string, file: File) => {
-        if (!activeProject || !file) return;
+    const handleSymbolImageChange = (symbolId: string, imageData: string) => {
+        if (!activeProject) return;
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const newImage = event.target?.result as string;
-            if (newImage) {
-                const newProject = {
-                    ...activeProject,
-                    symbols: activeProject.symbols.map(s =>
-                        s.id === symbolId ? { ...s, image: newImage } : s
-                    )
-                };
-                commitUpdate(newProject);
-            }
+        const newProject = {
+            ...activeProject,
+            symbols: activeProject.symbols.map(s =>
+                s.id === symbolId ? { ...s, image: imageData } : s
+            )
         };
-        reader.onerror = (error) => {
-            console.error("Failed to read image file:", error);
-            setError("Could not update symbol image.");
-        };
-        reader.readAsDataURL(file);
+        commitUpdate(newProject);
     };
 
     const handleSymbolDelete = (idToDelete: string) => {

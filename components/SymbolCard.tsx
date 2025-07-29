@@ -66,13 +66,71 @@ export const SymbolCard: React.FC<SymbolCardProps> = ({
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const compressImage = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = () => {
+                // Set max dimensions
+                const maxWidth = 200;
+                const maxHeight = 200;
+                
+                let { width, height } = img;
+                
+                // Calculate new dimensions
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and compress
+                ctx?.drawImage(img, 0, 0, width, height);
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                resolve(compressedDataUrl);
+            };
+            
+            img.onerror = reject;
+            img.src = URL.createObjectURL(file);
+        });
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
         const file = e.target.files?.[0];
         if (file) {
-            onImageChange(symbol.id, file);
+            try {
+                const compressedImage = await compressImage(file);
+                // Convert compressed data URL back to File
+                const response = await fetch(compressedImage);
+                const blob = await response.blob();
+                const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                onImageChange(symbol.id, compressedFile);
+            } catch (error) {
+                console.error('Error compressing image:', error);
+                // Fallback to original method
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const result = event.target?.result as string;
+                    if (result) {
+                        onImageChange(symbol.id, file);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
         }
-        // Reset file input value to allow re-uploading the same file
+        // Reset file input value
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
