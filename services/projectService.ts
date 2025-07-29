@@ -228,6 +228,8 @@ export const projectService = {
     async deletePdfFromProject(username: string, projectId: string, pdfId: string): Promise<Project | null> {
         try {
             console.log('Deleting PDF from project:', { projectId, pdfId });
+            console.log('Making DELETE request to:', `${API_BASE_URL}/api/pdfs/${pdfId}`);
+            console.log('Auth headers:', getAuthHeaders());
             
             // Delete the PDF from the server
             const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}`, {
@@ -235,7 +237,12 @@ export const projectService = {
                 headers: getAuthHeaders()
             });
             
+            console.log('Delete response status:', response.status);
+            console.log('Delete response headers:', response.headers);
+            
             if (!response.ok) {
+                const errorText = await response.text();
+                console.log('Delete response error text:', errorText);
                 throw new Error(`Failed to delete PDF: ${response.status} ${response.statusText}`);
             }
             

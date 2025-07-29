@@ -12,8 +12,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 AWS.config.update({ region: process.env.AWS_REGION });
 const s3 = new AWS.S3();
 
+// Apply authentication to all routes
 router.use(authenticateToken);
 
+// POST /api/pdfs/upload
 router.post('/upload', upload.single('pdf'), async (req, res) => {
     try {
         const { projectId, name, level } = req.body;
@@ -49,6 +51,7 @@ router.post('/upload', upload.single('pdf'), async (req, res) => {
     }
 });
 
+// GET /api/pdfs/:id/download
 router.get('/:id/download', async (req, res) => {
     try {
         const result = await pool.query(
@@ -81,12 +84,13 @@ router.get('/:id/download', async (req, res) => {
     }
 });
 
-// DELETE /api/pdfs/:id - Delete a specific PDF
+// DELETE /api/pdfs/:id
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        console.log('Deleting PDF:', id);
+        console.log('DELETE /api/pdfs/:id called with ID:', id);
+        console.log('User:', req.user);
         
         // Get PDF info first to check ownership and get S3 key
         const result = await pool.query(
@@ -94,12 +98,17 @@ router.delete('/:id', async (req, res) => {
             [id, req.user.userId]
         );
         
+        console.log('Database query result:', result.rows);
+        
         if (result.rows.length === 0) {
+            console.log('PDF not found or user does not have access');
             return res.status(404).json({ message: 'PDF not found' });
         }
         
         const pdf = result.rows[0];
         const key = `${req.user.userId}/${pdf.project_id}/${pdf.id}.pdf`;
+        
+        console.log('Deleting PDF with key:', key);
         
         // Delete from S3
         try {
@@ -125,4 +134,5 @@ router.delete('/:id', async (req, res) => {
 });
 
 export default router;
+
 
