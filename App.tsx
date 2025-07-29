@@ -24,12 +24,14 @@ import { LINEAR_DISCIPLINE_NAME } from './constants';
 import { EcdTypeAssignModal } from './components/EcdTypeAssignModal';
 import { EcdScheduleModal } from './components/EcdScheduleModal';
 import { PsuLocationModal } from './components/PsuLocationModal';
-
+import { AdminPanel } from './components/AdminPanel';
 
 const PIN_SIZE = 8; // base size in unscaled units for location pins
 
 const App: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<string | null>(() => authService.getCurrentUser());
+    const [isAdmin, setIsAdmin] = useState<boolean>(() => authService.isAdmin());
+    const [showAdminPanel, setShowAdminPanel] = useState(false);
     const [projects, setProjects] = useState<Project[]>([]);
     const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
     const [activePdfId, setActivePdfId] = useState<string | null>(null);
@@ -285,15 +287,26 @@ const App: React.FC = () => {
         }
     }, [activeProject, currentUser]);
 
-    const handleLoginSuccess = (email: string) => {
+    const handleLoginSuccess = (email: string, userIsAdmin: boolean = false) => {
         authService.saveCurrentUser(email);
         setCurrentUser(email);
+        setIsAdmin(userIsAdmin);
     };
 
     const handleLogout = () => {
         authService.logout();
         setCurrentUser(null);
+        setIsAdmin(false);
+        setShowAdminPanel(false);
     };
+
+    if (!currentUser) {
+        return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+    }
+
+    if (showAdminPanel && isAdmin) {
+        return <AdminPanel onBack={() => setShowAdminPanel(false)} />;
+    }
 
     const handleCreateProject = async (name: string, filesWithLevels: { file: File, level: string }[], templateId: string | null) => {
         if (!currentUser) return;
@@ -1821,6 +1834,45 @@ const App: React.FC = () => {
             const disciplineIds = new Set<string>();
             getAllChildDisciplineIds(activeDisciplineId, disciplineIds);
 
+            return activeProject.symbols.filter(s => 
+                s.disciplineId && 
+                disciplineIds.has(s.disciplineId) && 
+                s.page === currentPage && 
+                s.pdfId === activePdfId
+            );
+        }
+        return [];
+    }, [activeProject, activePdfId, currentPage, mode, activeSymbolId, activeDisciplineId]);
+
+    return (
+        <div className="flex h-screen bg-gray-100 font-sans">
+            <Sidebar
+                projects={projects}
+                activeProjectId={activeProjectId}
+                onProjectSelect={handleLoadProject}
+                onProjectDelete={handleDeleteProject}
+                onAddPdfs={handleAddPdfs}
+                onConfirmAddPdfs={handleConfirmAddPdfs}
+                onPdfLevelChange={handleUpdatePdfLevel}
+                onDeletePdf={handleDeletePdf}
+                onPdfOpacityChange={handlePdfOpacityChange}
+                onAddMeasurementGroup={handleAddMeasurementGroup}
+                onUpdateMeasurementGroupName={handleUpdateMeasurementGroupName}
+                onDeleteMeasurementGroup={handleDeleteMeasurementGroup}
+                onAssignMeasurementToGroup={handleAssignMeasurementToGroup}
+                onUpdateMeasurementGroupParent={handleUpdateMeasurementGroupParent}
+                onAddLinearComponent={handleStartCreateLinearComponent}
+                onConfirmLinearComponent={handleConfirmCreateLinearComponent}
+                onAddDaliNetwork={handleAddDaliNetwork}
+                onUpdateDaliNetwork={handleUpdateDaliNetwork}
+                onDeleteDaliNetwork={handleDeleteDaliNetwork}
+                onStartDaliPlacement={handleStartDaliPlacement}
+                onPlaceDaliDevice={handlePlaceDaliDevice}
+                onPaintDaliDevice={handlePaintDaliDevice}
+                onDeleteDaliDevice={handleDeleteDaliDevice}
+                onStartDaliPaintSelection={handleStartDaliPaintSelection}
+                onDaliDevicePicked={handleDaliDevicePicked}
+                onDaliPsuPickedForPainting={handleDaliPsuPickedFor
             return activeProject.symbols.filter(s => s.disciplineId && disciplineIds.has(s.disciplineId) && s.page === currentPage && s.pdfId === activePdfId);
         }
 
