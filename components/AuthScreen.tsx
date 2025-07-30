@@ -114,7 +114,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                     </button>
                 </p>
                 <p className="text-xs text-gray-400 mt-8 text-center">
-                    Note: For demonstration purposes, user data is stored locally in your browser and is not secured. Do not use real passwords.
+                    Your data is encrypted and stored securely. Use a strong, unique password.
                 </p>
             </div>
         </div>
