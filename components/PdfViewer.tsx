@@ -1345,8 +1345,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         const pointOnContentX = scrollLeft + mouseX;
         const pointOnContentY = scrollTop + mouseY;
 
-        const oldScale = zoom;
-        const newScale = Math.max(0.1, Math.min(5, oldScale - e.deltaY * 0.001));
+        const oldScale = zoomRef.current; // Use ref for current value
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // More intuitive zoom direction
+        const newScale = Math.max(0.1, Math.min(5, oldScale * zoomFactor));
 
         if (newScale === oldScale) return;
 
@@ -1378,6 +1379,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 ref={viewerContainerRef}
                 className={`flex-grow w-full h-[calc(100%-40px)] overflow-auto bg-gray-300 shadow-inner relative ${getCursor()}`}
                 style={{ touchAction: 'none' }}
+                onWheel={handleWheel}
             >
                  {isRendering && <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-30"><LoadingIcon/> Rendering PDF...</div>}
                 <div className="relative">
