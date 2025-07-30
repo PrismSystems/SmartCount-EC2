@@ -659,11 +659,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 setIsMagnifying(true);
             }
             // Zoom shortcuts
-            if (e.key === '+' || e.key === '=') {
+            if (e.key === 'z' || e.key === '=' || e.key === '+') {
                 e.preventDefault();
                 setZoom(z => Math.min(5, z * 1.1));
             }
-            if (e.key === '-') {
+            if (e.key === 'x' || e.key === '-') {
                 e.preventDefault();
                 setZoom(z => Math.max(0.1, z * 0.9));
             }
