@@ -510,6 +510,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     const [zoom, setZoom] = useState(1);
     const zoomRef = useRef(zoom);
 
+    // Update the ref whenever zoom changes
+    useEffect(() => {
+        zoomRef.current = zoom;
+    }, [zoom]);
+
     const [selection, setSelection] = useState<Location | null>(null);
     const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
     const [hoveringElement, setHoveringElement] = useState<{type: 'pin' | 'dali' | 'psu', id: string, index?: number} | null>(null);
