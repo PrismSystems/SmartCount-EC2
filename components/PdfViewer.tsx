@@ -1332,30 +1332,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     };
 
     const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        const container = viewerContainerRef.current;
-        if (!container) return;
-
-        const rect = container.getBoundingClientRect();
-        const scrollLeft = container.scrollLeft;
-        const scrollTop = container.scrollTop;
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        const pointOnContentX = scrollLeft + mouseX;
-        const pointOnContentY = scrollTop + mouseY;
-
-        const oldScale = zoomRef.current; // Use ref for current value
-        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // More intuitive zoom direction
-        const newScale = Math.max(0.1, Math.min(5, oldScale * zoomFactor));
-
-        if (newScale === oldScale) return;
-
-        const newScrollLeft = (pointOnContentX * newScale / oldScale) - mouseX;
-        const newScrollTop = (pointOnContentY * newScale / oldScale) - mouseY;
-
-        setZoom(newScale);
-        scrollTargetRef.current = { left: newScrollLeft, top: newScrollTop };
+        // Remove preventDefault to allow default scrolling
+        // Remove all zoom logic - let the browser handle scrolling naturally
     };
     
     const getCursor = () => {
