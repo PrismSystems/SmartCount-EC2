@@ -1371,7 +1371,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             <div
                 ref={viewerContainerRef}
                 className={`flex-grow w-full h-[calc(100%-40px)] overflow-auto bg-gray-300 shadow-inner relative ${getCursor()}`}
-                onWheel={handleWheel}
                 style={{ touchAction: 'none' }}
             >
                  {isRendering && <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-30"><LoadingIcon/> Rendering PDF...</div>}
