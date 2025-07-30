@@ -1,5 +1,4 @@
 
-
 import React, { useRef, useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import type { Location, SymbolInfo, Area, LinearMeasurement, ScaleInfo, ManualEntry, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, PsuLocation } from '../types';
 import { LoadingIcon, AddIcon, PsuIcon } from './icons';
@@ -508,7 +507,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     const [pdfDoc, setPdfDoc] = useState<any>(null);
     const [numPages, setNumPages] = useState<number>(0);
     const [isRendering, setIsRendering] = useState<boolean>(false);
-    const [scale, setScale] = useState(1.5);
+    const [zoom, setZoom] = useState(1);
 
     const [selection, setSelection] = useState<Location | null>(null);
     const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
@@ -579,7 +578,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         setIsRendering(true);
         try {
             const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale });
+            const viewport = page.getViewport({ scale: zoom });
             const canvas = canvasRef.current;
             const overlayCanvas = overlayCanvasRef.current;
             if (!canvas || !overlayCanvas) return;
@@ -587,10 +586,16 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             const context = canvas.getContext('2d');
             if (!context) return;
             
+            // Set canvas dimensions
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            canvas.style.width = `${viewport.width}px`;
+            canvas.style.height = `${viewport.height}px`;
+            
             overlayCanvas.height = viewport.height;
             overlayCanvas.width = viewport.width;
+            overlayCanvas.style.width = `${viewport.width}px`;
+            overlayCanvas.style.height = `${viewport.height}px`;
 
             const renderContext = {
                 canvasContext: context,
@@ -601,7 +606,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             renderTaskRef.current = task;
             
             await task.promise;
-            
             renderTaskRef.current = null;
 
         } catch(e: any) {
@@ -611,7 +615,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         } finally {
             setIsRendering(false);
         }
-    }, [pdfDoc, scale]);
+    }, [pdfDoc, zoom]);
 
 
     useEffect(() => {
@@ -626,7 +630,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             viewerContainerRef.current.scrollTop = scrollTargetRef.current.top;
             scrollTargetRef.current = null;
         }
-    }, [scale]);
+    }, [zoom]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -699,13 +703,13 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         const animate = (time: number) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            drawAreasOnCanvas(ctx, areas, scale);
-            drawMeasurementsOnCanvas(ctx, measurements, scaleInfo, selectedMeasurementId, scale, mode, hoveringNode, isShiftPressed);
+            drawAreasOnCanvas(ctx, areas, zoom);
+            drawMeasurementsOnCanvas(ctx, measurements, scaleInfo, selectedMeasurementId, zoom, mode, hoveringNode, isShiftPressed);
             
-            drawDaliHighlightOnCanvas(ctx, daliDevicesOnPage, hoveredDaliNetworkId, scale, time);
+            drawDaliHighlightOnCanvas(ctx, daliDevicesOnPage, hoveredDaliNetworkId, zoom, time);
 
             if (hasHighlights) {
-                drawSymbolHighlightsOnCanvas(ctx, symbolsToHighlight, scale, time, mode, activeSymbolId);
+                drawSymbolHighlightsOnCanvas(ctx, symbolsToHighlight, zoom, time, mode, activeSymbolId);
             }
 
             if(hasDali) {
@@ -713,7 +717,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     if (network.isVisible && network.psuLocation) {
                         const psuLoc = network.psuLocation;
                         if (psuLoc.pdfId === activePdfId && psuLoc.page === currentPage) {
-                             drawDaliPsuOnCanvas(ctx, psuLoc, scale);
+                             drawDaliPsuOnCanvas(ctx, psuLoc, zoom);
                         }
                     }
                 });
@@ -721,7 +725,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     const network = daliMap.get(device.networkId);
                     const ecdType = device.ecdTypeId ? ecdTypeMap.get(device.ecdTypeId) : undefined;
                     if (network?.isVisible) {
-                        drawDaliDeviceOnCanvas(ctx, device, network, ecdType, scale, showDaliLabels);
+                        drawDaliDeviceOnCanvas(ctx, device, network, ecdType, zoom, showDaliLabels);
                     }
                 });
             }
@@ -734,14 +738,14 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     ctx.globalAlpha = 0.7;
                     const PSU_SIZE = 10;
                     const dummyLocation: PsuLocation = {
-                        x: (mousePos.x / scale) - PSU_SIZE,
-                        y: (mousePos.y / scale) - PSU_SIZE,
+                        x: (mousePos.x / zoom) - PSU_SIZE,
+                        y: (mousePos.y / zoom) - PSU_SIZE,
                         width: PSU_SIZE * 2,
                         height: PSU_SIZE * 2,
                         pdfId: activePdfId!, 
                         page: currentPage
                     };
-                    drawDaliPsuOnCanvas(ctx, dummyLocation, scale);
+                    drawDaliPsuOnCanvas(ctx, dummyLocation, zoom);
                     ctx.restore();
                 } else {
                     let placementInfo: { deviceType: DaliDeviceType } | null = null;
@@ -771,10 +775,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             if (selection) {
                 ctx.strokeStyle = '#0ea5e9';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(selection.x, selection.y, selection.width, selection.height);
+                ctx.strokeRect(selection.x * zoom, selection.y * zoom, selection.width * zoom, selection.height * zoom);
             }
             if (isDrawing) {
-                drawActiveDrawingOnCanvas(ctx, drawingPoints, mousePos, mode, scale, isShiftPressed, scaleInfo, measurements, activeDrawingMeasurementId);
+                drawActiveDrawingOnCanvas(ctx, drawingPoints, mousePos, mode, zoom, isShiftPressed, scaleInfo, measurements, activeDrawingMeasurementId);
             }
             if (hoveringSegment) {
                 const { midPoint } = hoveringSegment;
@@ -783,7 +787,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.arc(midPoint.x, midPoint.y, 10, 0, Math.PI * 2);
+                ctx.arc(midPoint.x * zoom, midPoint.y * zoom, 10 * zoom, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
 
@@ -791,10 +795,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 ctx.lineWidth = 2.5;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
-                ctx.moveTo(midPoint.x - 4, midPoint.y - 4);
-                ctx.lineTo(midPoint.x + 4, midPoint.y + 4);
-                ctx.moveTo(midPoint.x + 4, midPoint.y - 4);
-                ctx.lineTo(midPoint.x - 4, midPoint.y + 4);
+                ctx.moveTo(midPoint.x * zoom - 4 * zoom, midPoint.y * zoom - 4 * zoom);
+                ctx.lineTo(midPoint.x * zoom + 4 * zoom, midPoint.y * zoom + 4 * zoom);
+                ctx.moveTo(midPoint.x * zoom + 4 * zoom, midPoint.y * zoom - 4 * zoom);
+                ctx.lineTo(midPoint.x * zoom - 4 * zoom, midPoint.y * zoom + 4 * zoom);
                 ctx.stroke();
                 ctx.restore();
             }
@@ -806,16 +810,16 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     const network = daliNetworks.find(n => n.id === hoveringElement!.id);
                     if (network?.psuLocation) {
                         const loc = network.psuLocation;
-                        pinTipX = (loc.x + loc.width / 2) * scale;
-                        pinTipY = (loc.y + loc.height / 2) * scale;
+                        pinTipX = (loc.x + loc.width / 2) * zoom;
+                        pinTipY = (loc.y + loc.height / 2) * zoom;
                     }
                 } else if (hoveringElement?.type === 'pin' && hoveringElement.id && typeof hoveringElement.index === 'number') {
                     const symbol = symbolsToHighlight.find(s => s.id === hoveringElement!.id);
                     if (symbol) {
                         const loc = symbol.locations[hoveringElement!.index!];
                         if (loc) {
-                            pinTipX = (loc.x + loc.width / 2) * scale;
-                            pinTipY = (loc.y + loc.height) * scale;
+                            pinTipX = (loc.x + loc.width / 2) * zoom;
+                            pinTipY = (loc.y + loc.height) * zoom;
                             text = symbol.name;
                         }
                     }
@@ -824,8 +828,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     const network = device ? daliNetworks.find(n => n.id === device.networkId) : undefined;
                      if(device && network) {
                         const loc = device.location;
-                        pinTipX = (loc.x + loc.width / 2) * scale;
-                        pinTipY = (loc.y + loc.height) * scale;
+                        pinTipX = (loc.x + loc.width / 2) * zoom;
+                        pinTipY = (loc.y + loc.height) * zoom;
                         const address = device.type === 'ECG' ? String(device.shortAddress).padStart(2, '0') : device.shortAddress;
                         let ecdRefText = '';
                         if(device.type === 'ECD' && device.ecdTypeId) {
@@ -840,8 +844,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                         const psuLoc = network.psuLocation;
                         if (psuLoc.pdfId === activePdfId && psuLoc.page === currentPage) {
                             const loc = psuLoc;
-                            pinTipX = (loc.x + loc.width / 2) * scale;
-                            pinTipY = (loc.y + loc.height / 2) * scale;
+                            pinTipX = (loc.x + loc.width / 2) * zoom;
+                            pinTipY = (loc.y + loc.height / 2) * zoom;
                             let psuText = `${network.name} PSU`;
                             if (loc.location) {
                                 psuText += ` - ${loc.location}`;
@@ -883,7 +887,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [symbolsToHighlight, selection, scale, currentPage, mode, mousePos, activeSymbolColor, isMagnifying, activeSymbolId, areas, drawingPoints, measurements, scaleInfo, activeDrawingMeasurementId, selectedMeasurementId, isShiftPressed, hoveringElement, hoveringSegment, hoveringNode, daliNetworks, daliDevices, ecdTypes, activeDaliPlacement, hoveredDaliNetworkId, daliDeviceToPaint, showDaliLabels, activePdfId, daliPsuLocationToPaint]);
+    }, [symbolsToHighlight, selection, zoom, currentPage, mode, mousePos, activeSymbolColor, isMagnifying, activeSymbolId, areas, drawingPoints, measurements, scaleInfo, activeDrawingMeasurementId, selectedMeasurementId, isShiftPressed, hoveringElement, hoveringSegment, hoveringNode, daliNetworks, daliDevices, ecdTypes, activeDaliPlacement, hoveredDaliNetworkId, daliDeviceToPaint, showDaliLabels, activePdfId, daliPsuLocationToPaint]);
 
     useEffect(() => {
         if (!isMagnifying || !mousePos || !magnifierCanvasRef.current || !canvasRef.current || !(mode.startsWith('placing_dali') || mode.startsWith('painting_dali') || mode === 'placing_dots')) {
@@ -916,7 +920,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         magnifierCtx.lineTo(MAGNIFIER_SIZE, MAGNIFIER_SIZE / 2);
         magnifierCtx.stroke();
 
-    }, [isMagnifying, mousePos, mode, scale]);
+    }, [isMagnifying, mousePos, mode, zoom]);
 
     const getCanvasMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
@@ -930,7 +934,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const pos = getCanvasMousePos(e);
-        const unscaledPos = { x: pos.x / scale, y: pos.y / scale };
+        const unscaledPos = { x: pos.x / zoom, y: pos.y / zoom };
 
         if (mode === 'idle' && selectedMeasurementId) {
             // Priority 1: Delete segment if hovering delete icon
@@ -968,7 +972,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         if (mode === 'drawing_area' || mode === 'setting_scale' || mode === 'drawing_measurement') {
             if (mode === 'drawing_area' && drawingPoints.length > 2) {
                  const firstPoint = drawingPoints[0];
-                 const distance = Math.sqrt(Math.pow((firstPoint.x * scale) - pos.x, 2) + Math.pow((firstPoint.y * scale) - pos.y, 2));
+                 const distance = Math.sqrt(Math.pow((firstPoint.x * zoom) - pos.x, 2) + Math.pow((firstPoint.y * zoom) - pos.y, 2));
                  if (distance < 10) { // Clicked near the start point to close the polygon
                      onFinishAreaDrawing();
                      return;
@@ -1128,7 +1132,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const pos = getCanvasMousePos(e);
-        const unscaledPos = { x: pos.x / scale, y: pos.y / scale };
+        const unscaledPos = { x: pos.x / zoom, y: pos.y / zoom };
     
         if (isDraggingNode) {
             onUpdateMeasurementPoint(unscaledPos);
@@ -1163,7 +1167,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                         for (let segIdx = 0; segIdx < selectedMeasurement.points.length; segIdx++) {
                             for (let ptIdx = 0; ptIdx < selectedMeasurement.points[segIdx].length; ptIdx++) {
                                 const point = selectedMeasurement.points[segIdx][ptIdx];
-                                const dist = Math.sqrt(Math.pow((point.x * scale) - pos.x, 2) + Math.pow((point.y * scale) - pos.y, 2));
+                                const dist = Math.sqrt(Math.pow((point.x * zoom) - pos.x, 2) + Math.pow((point.y * zoom) - pos.y, 2));
                                 if (dist <= (isShiftPressed ? 8 : 6)) {
                                     foundNode = { measurementId: selectedMeasurementId, segmentIndex: segIdx, pointIndex: ptIdx };
                                     break;
@@ -1177,7 +1181,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                                 const segment = selectedMeasurement.points[segIdx];
                                 let isHoveringThisSegment = false;
                                 for (let i = 0; i < segment.length - 1; i++) {
-                                    if (pointToLineSegmentDistance(unscaledPos, segment[i], segment[i+1]) * scale < 5) {
+                                    if (pointToLineSegmentDistance(unscaledPos, segment[i], segment[i+1]) * zoom < 5) {
                                         isHoveringThisSegment = true;
                                         break;
                                     }
@@ -1190,7 +1194,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                                     foundSegment = {
                                         measurementId: selectedMeasurementId,
                                         segmentIndex: segIdx,
-                                        midPoint: { x: (p1.x + p2.x) / 2 * scale, y: (p1.y + p2.y) / 2 * scale }
+                                        midPoint: { x: (p1.x + p2.x) / 2 * zoom, y: (p1.y + p2.y) / 2 * zoom }
                                     };
                                     break;
                                 }
@@ -1282,10 +1286,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
         symbolCtx.drawImage(
             canvasRef.current,
-            selection.x,
-            selection.y,
-            selection.width,
-            selection.height,
+            selection.x * zoom,
+            selection.y * zoom,
+            selection.width * zoom,
+            selection.height * zoom,
             0,
             0,
             selection.width,
@@ -1335,15 +1339,15 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         const pointOnContentX = scrollLeft + mouseX;
         const pointOnContentY = scrollTop + mouseY;
 
-        const oldScale = scale;
-        const newScale = Math.max(0.5, Math.min(3, oldScale - e.deltaY * 0.001));
+        const oldScale = zoom;
+        const newScale = Math.max(0.1, Math.min(5, oldScale - e.deltaY * 0.001));
 
         if (newScale === oldScale) return;
 
         const newScrollLeft = (pointOnContentX * newScale / oldScale) - mouseX;
         const newScrollTop = (pointOnContentY * newScale / oldScale) - mouseY;
 
-        setScale(newScale);
+        setZoom(newScale);
         scrollTargetRef.current = { left: newScrollLeft, top: newScrollTop };
     };
     
@@ -1415,6 +1419,31 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     </button>
                 </div>
             )}
+            {/* Update zoom controls */}
+            <div className="flex items-center space-x-2 bg-white px-3 py-1 rounded-full shadow-md">
+                <button 
+                    onClick={() => setZoom(z => Math.max(0.1, z * 0.9))}
+                    className="px-2 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded"
+                    title="Zoom Out"
+                >
+                    -
+                </button>
+                <span className="text-sm font-mono min-w-[60px] text-center">{Math.round(zoom * 100)}%</span>
+                <button 
+                    onClick={() => setZoom(z => Math.min(5, z * 1.1))}
+                    className="px-2 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded"
+                    title="Zoom In"
+                >
+                    +
+                </button>
+                <button 
+                    onClick={() => setZoom(1)}
+                    className="px-2 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded"
+                    title="Reset Zoom"
+                >
+                    100%
+                </button>
+            </div>
         </div>
     );
 };
