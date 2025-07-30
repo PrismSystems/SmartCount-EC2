@@ -508,6 +508,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     const [numPages, setNumPages] = useState<number>(0);
     const [isRendering, setIsRendering] = useState<boolean>(false);
     const [zoom, setZoom] = useState(1);
+    const zoomRef = useRef(zoom);
 
     const [selection, setSelection] = useState<Location | null>(null);
     const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
