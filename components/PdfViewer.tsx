@@ -1162,10 +1162,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         }
     
         if (mode.startsWith('selecting') && startPoint) {
-            const x = Math.min(pos.x, startPoint.x);
-            const y = Math.min(pos.y, startPoint.y);
-            const width = Math.abs(pos.x - startPoint.x);
-            const height = Math.abs(pos.y - startPoint.y);
+            const x = Math.min(unscaledPos.x, startPoint.x);
+            const y = Math.min(unscaledPos.y, startPoint.y);
+            const width = Math.abs(unscaledPos.x - startPoint.x);
+            const height = Math.abs(unscaledPos.y - startPoint.y);
             setSelection({ x, y, width, height });
         } else {
             const isHoverDetectionMode = mode === 'idle' || mode === 'painting_dali_psu_location';
