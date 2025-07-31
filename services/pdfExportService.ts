@@ -139,46 +139,28 @@ export const exportDaliPdf = async (project: Project, pdfId: string, pageNumber:
         const transformedPos = transformPoint({ x: psu.x + psu.width / 2, y: psu.y + psu.height / 2 });
         
         // Draw PSU icon (rectangle with "PSU" text)
-        const psuWidth = 30;
-        const psuHeight = 20;
+        const psuWidth = 20;
+        const psuHeight = 15;
         
         page.drawRectangle({
             x: transformedPos.x - psuWidth / 2,
             y: transformedPos.y - psuHeight / 2,
             width: psuWidth,
             height: psuHeight,
-            color: rgb(0.9, 0.9, 0.9),
+            color: rgb(.2352, .7098, .6392),
             borderColor: rgb(0, 0, 0),
             borderWidth: 1,
         });
         
-        page.drawText('PSU', {
+        page.drawText(network.name, {
             x: transformedPos.x - 10,
             y: transformedPos.y - 4,
             font: helveticaFont,
             size: 8,
             color: rgb(0, 0, 0),
         });
-        
-        // Draw network name and location below PSU
-        const labelY = transformedPos.y - psuHeight / 2 - 15;
-        page.drawText(`${network.name} (${network.id})`, {
-            x: transformedPos.x - (network.name.length + network.id.length + 3) * 3,
-            y: labelY,
-            font: helveticaFont,
-            size: 8,
-            color: rgb(0, 0, 0),
-        });
-        
-        if (psu.location && psu.location.trim()) {
-            page.drawText(psu.location, {
-                x: transformedPos.x - psu.location.length * 2.5,
-                y: labelY - 12,
-                font: helveticaFont,
-                size: 7,
-                color: rgb(0.3, 0.3, 0.3),
-            });
-        }
+
+
     });
     
     // --- Draw DALI Devices ---
