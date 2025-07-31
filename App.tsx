@@ -5,7 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { PdfViewer } from './components/PdfViewer';
 import { exportExcelWithSchedule } from './services/excelExportService';
 import { projectService } from './services/projectService';
-import type { SymbolInfo, Location, Discipline, Project, PdfFile, Area, LinearMeasurement, ScaleInfo, ManualEntry, MeasurementGroup, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, DaliNetworkTemplate, PsuLocation } from './types';
+import type { SymbolInfo, Location, Discipline, Project, Area, LinearMeasurement, ScaleInfo, ManualEntry, MeasurementGroup, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, DaliNetworkTemplate, PsuLocation } from './types';
 import { ProjectScreen } from './components/ProjectScreen';
 import { CopySymbolModal } from './components/CopySymbolModal';
 import { AddPdfsModal } from './components/AddPdfsModal';
@@ -36,7 +36,7 @@ const App: React.FC = () => {
     const [activePdfData, setActivePdfData] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isRestoring, setIsRestoring] = useState(false);
+    const [isRestoring] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeSymbolId, setActiveSymbolId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -1307,10 +1307,10 @@ const App: React.FC = () => {
         setError(null);
     }
 
-    const handleCancelSelection = () => {
-        setMode('idle');
-        setDrawingPoints([]);
-    };
+    // const handleCancelSelection = () => {
+    //    setMode('idle');
+    //    setDrawingPoints([]);
+    //};
 
     const handleSymbolSelected = useCallback(async (symbolImage: string) => {
         if (!activeProject || !activePdfId) return;
