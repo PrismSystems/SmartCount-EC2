@@ -162,8 +162,8 @@ export const exportDaliPdf = async (project: Project, pdfId: string, pageNumber:
         
         // Draw network name and location below PSU
         const labelY = transformedPos.y - psuHeight / 2 - 15;
-        page.drawText(`${network.name}`, {
-            x: transformedPos.x - network.name.length * 3,
+        page.drawText(`${network.name} (${network.id})`, {
+            x: transformedPos.x - (network.name.length + network.id.length + 3) * 3,
             y: labelY,
             font: helveticaFont,
             size: 8,
