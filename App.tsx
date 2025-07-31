@@ -358,18 +358,34 @@ const App: React.FC = () => {
         setFilesToAdd(null); // Close modal
     };
     
-    const handleUpdatePdfLevel = (pdfId: string, newLevel: string) => {
+    const handleUpdatePdfLevel = async (pdfId: string, newLevel: string) => {
         if (!activeProject) return;
-        const newProject = {
-            ...activeProject,
-            pdfs: activeProject.pdfs.map(p => {
-                if (p.id === pdfId) {
-                    return { ...p, level: newLevel };
-                }
-                return p;
-            })
-        };
-        commitUpdate(newProject);
+        
+        try {
+            // Update in database
+            await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/api/pdfs/${pdfId}/level`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ level: newLevel })
+            });
+            
+            // Update local state
+            const newProject = {
+                ...activeProject,
+                pdfs: activeProject.pdfs.map(p => {
+                    if (p.id === pdfId) {
+                        return { ...p, level: newLevel };
+                    }
+                    return p;
+                })
+            };
+            commitUpdate(newProject);
+        } catch (error) {
+            console.error('Error updating PDF level:', error);
+        }
     };
 
     const handleDeletePdf = async (pdfId: string) => {
