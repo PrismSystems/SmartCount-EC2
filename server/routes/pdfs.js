@@ -133,29 +133,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// PUT /api/pdfs/:id/level - Update PDF level
-router.put('/:id/level', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { level } = req.body;
-        
-        const result = await pool.query(
-            'UPDATE pdfs SET level = $1 WHERE id = $2 AND project_id IN (SELECT id FROM projects WHERE user_id = $3) RETURNING *',
-            [level, id, req.user.userId]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'PDF not found' });
-        }
-        
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Update PDF level error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
 export default router;
-
 
 
