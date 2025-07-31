@@ -1,9 +1,9 @@
 
 
-import React, { useState, Fragment, useEffect, useRef } from 'react';
-import type { SymbolInfo, Discipline, Project, PdfFile, Area, LinearMeasurement, ScaleInfo, ManualEntry, MeasurementGroup, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, DaliNetworkTemplate, PsuLocation } from '../types';
-import { SymbolCard } from './SymbolCard';
-import { AddIcon, ExportIcon, ProjectsIcon, ChevronDownIcon, TrashIcon, EyeIcon, EyeOffIcon, EditIcon, TableIcon, RulerIcon, PdfFileIcon, LoadingIcon, PaintBrushIcon, TextIcon, TextOffIcon, PsuIcon, RenumberIcon, SaveIcon, WarningIcon } from './icons';
+import React, { useState, useEffect, useRef } from 'react';
+import type { Project, PdfFile, Area, LinearMeasurement, ScaleInfo, ManualEntry, MeasurementGroup, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, DaliNetworkTemplate } from '../types';
+//import { SymbolCard } from './SymbolCard';
+import { AddIcon, ProjectsIcon, ChevronDownIcon, TrashIcon, EyeIcon, EyeOffIcon, EditIcon, RulerIcon, PdfFileIcon, LoadingIcon, PaintBrushIcon, TextIcon, TextOffIcon, PsuIcon, RenumberIcon, SaveIcon, WarningIcon } from './icons';
 import { measurementService } from '../services/measurementService';
 import { SymbolsAndDisciplinesManager } from './SymbolsAndDisciplinesManager';
 import {App_Name, Version_Number} from "@/constants.ts";

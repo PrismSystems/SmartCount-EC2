@@ -1,13 +1,13 @@
 
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import type { Project } from '../types';
 import { UploadIcon, TrashIcon } from './icons';
 import {App_Name, App_Tag_Line} from "@/constants.ts";
 
 interface ProjectScreenProps {
     projects: Project[];
-    onCreate: (name: string) => void;
+    onCreate: (name: string, filesWithLevels: { file: File, level: string }[], templateId: string | null) => void;
     onLoad: (id: string) => void;
     onDelete: (id: string) => void;
 }

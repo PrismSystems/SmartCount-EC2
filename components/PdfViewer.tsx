@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback, useLayoutEffect } from 'react';
 import type { Location, SymbolInfo, Area, LinearMeasurement, ScaleInfo, ManualEntry, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, PsuLocation } from '../types';
-import { LoadingIcon, AddIcon, PsuIcon } from './icons';
+import { LoadingIcon } from './icons';
 import { measurementService } from '../services/measurementService';
 
 // Since pdf.js is loaded from a script tag, we declare its global variable.
@@ -180,7 +180,7 @@ const drawDaliPsuOnCanvas = (ctx: CanvasRenderingContext2D, loc: PsuLocation, sc
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Draw power symbol path
+    // Draw a power symbol path
     ctx.beginPath();
     ctx.moveTo(centerX, centerY - 6);
     ctx.lineTo(centerX, centerY + 6);
@@ -193,7 +193,7 @@ const drawDaliPsuOnCanvas = (ctx: CanvasRenderingContext2D, loc: PsuLocation, sc
 
     ctx.stroke();
 
-    // Draw circle around it
+    // Draw a circle around it
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
@@ -495,7 +495,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     onPlacePsu,
     onDeletePsu,
     onStartEditPsuLocation,
-    activeDaliPsuPlacementNetworkId,
     activePdfId,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1266,7 +1265,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                  if (!selection) onCancelSelection();
             }
             return;
-        };
+        }
         
         if(selection.width < 5 || selection.height < 5) {
             setStartPoint(null);

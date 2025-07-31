@@ -1,5 +1,6 @@
 
 
+// @ts-ignore
 import type { Project, SymbolInfo, Discipline, PdfFile, Area, LinearMeasurement, MeasurementGroup, DaliNetwork, DaliDevice, EcdType, DaliNetworkTemplate } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
@@ -12,6 +13,7 @@ const getAuthHeaders = () => {
     };
 };
 
+// @ts-ignore
 export const projectService = {
     async getProjects(): Promise<Project[]> {
         try {
@@ -23,7 +25,7 @@ export const projectService = {
             const projects = await response.json();
             
             // Ensure each project has all required arrays
-            return projects.map(project => ({
+            return projects.map((project: { pdfs: any; symbols: any; disciplines: any; areas: any; measurements: any; measurementGroups: any; daliNetworks: any; daliDevices: any; ecdTypes: any; daliNetworkTemplates: any; }) => ({
                 ...project,
                 pdfs: project.pdfs || [],
                 symbols: project.symbols || [],
@@ -115,7 +117,7 @@ export const projectService = {
         }
     },
 
-    async saveProject(username: string, project: Project): Promise<void> {
+    async saveProject(_username: string, project: Project): Promise<void> {
         try {
             console.log('Saving project:', project.id, project.name);
             const response = await fetch(`${API_BASE_URL}/api/projects/${project.id}`, {
@@ -174,7 +176,7 @@ export const projectService = {
         }
     },
 
-    async addPdfsToProject(username: string, project: Project, filesWithLevels: { file: File, level: string }[]): Promise<Project> {
+    async addPdfsToProject(_username: string, project: Project, filesWithLevels: { file: File, level: string }[]): Promise<Project> {
         try {
             // Upload PDFs
             const newPdfs = [];
@@ -206,7 +208,7 @@ export const projectService = {
         }
     },
 
-    async deleteProject(username: string, projectId: string): Promise<void> {
+    async deleteProject(_username: string, projectId: string): Promise<void> {
         try {
             console.log('Deleting project:', projectId);
             const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
@@ -225,7 +227,7 @@ export const projectService = {
         }
     },
 
-    async deletePdfFromProject(username: string, projectId: string, pdfId: string): Promise<Project | null> {
+    async deletePdfFromProject(_username: string, projectId: string, pdfId: string): Promise<Project | null> {
         try {
             console.log('Deleting PDF from project:', { projectId, pdfId });
             console.log('Making DELETE request to:', `${API_BASE_URL}/api/pdfs/${pdfId}`);
@@ -319,7 +321,7 @@ export const projectService = {
         }
     },
 
-    async importAllBackup(username: string, file: File): Promise<{ success: boolean; message: string }> {
+    async importAllBackup(file: File): Promise<{ success: boolean; message: string }> {
         try {
             const text = await file.text();
             const backup = JSON.parse(text);
@@ -336,7 +338,7 @@ export const projectService = {
         }
     },
 
-    async importSingleProjectBackup(username: string, file: File): Promise<{ success: boolean; message: string }> {
+    async importSingleProjectBackup(file: File): Promise<{ success: boolean; message: string }> {
         try {
             const text = await file.text();
             const backup = JSON.parse(text);
