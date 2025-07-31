@@ -130,6 +130,57 @@ export const exportDaliPdf = async (project: Project, pdfId: string, pageNumber:
     const daliDevicesOnPage = (project.daliDevices || []).filter(d => d.pdfId === pdfId && d.page === pageNumber);
     const daliNetworks = new Map((project.daliNetworks || []).map(n => [n.id, n]));
     
+    // --- Draw DALI PSU Locations ---
+    const psuLocationsOnPage = (project.daliNetworks || [])
+        .filter(n => n.psuLocation && n.psuLocation.pdfId === pdfId && n.psuLocation.page === pageNumber && n.isVisible)
+        .map(n => ({ network: n, psu: n.psuLocation! }));
+
+    psuLocationsOnPage.forEach(({ network, psu }) => {
+        const transformedPos = transformPoint({ x: psu.x + psu.width / 2, y: psu.y + psu.height / 2 });
+        
+        // Draw PSU icon (rectangle with "PSU" text)
+        const psuWidth = 30;
+        const psuHeight = 20;
+        
+        page.drawRectangle({
+            x: transformedPos.x - psuWidth / 2,
+            y: transformedPos.y - psuHeight / 2,
+            width: psuWidth,
+            height: psuHeight,
+            color: rgb(0.9, 0.9, 0.9),
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 1,
+        });
+        
+        page.drawText('PSU', {
+            x: transformedPos.x - 10,
+            y: transformedPos.y - 4,
+            font: helveticaFont,
+            size: 8,
+            color: rgb(0, 0, 0),
+        });
+        
+        // Draw network name and location below PSU
+        const labelY = transformedPos.y - psuHeight / 2 - 15;
+        page.drawText(`${network.name}`, {
+            x: transformedPos.x - network.name.length * 3,
+            y: labelY,
+            font: helveticaFont,
+            size: 8,
+            color: rgb(0, 0, 0),
+        });
+        
+        if (psu.location && psu.location.trim()) {
+            page.drawText(psu.location, {
+                x: transformedPos.x - psu.location.length * 2.5,
+                y: labelY - 12,
+                font: helveticaFont,
+                size: 7,
+                color: rgb(0.3, 0.3, 0.3),
+            });
+        }
+    });
+    
     // --- Draw DALI Devices ---
     daliDevicesOnPage.forEach(device => {
         const network = daliNetworks.get(device.networkId);
