@@ -634,7 +634,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         }
     }, [pdfOpacity]);
     
-    // Effect for detecting global key presses (Ctrl for reassign, Alt for magnify)
+    // Effect for detecting global key presses (Ctrl for reassign, Alt for magnify, +/- for zoom)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -646,6 +646,27 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             if (e.key === 'Alt' && (mode === 'placing_dots' || mode.startsWith('painting_dali') || mode.startsWith('placing_dali')) && !isMagnifying) {
                 e.preventDefault();
                 setIsMagnifying(true);
+            }
+            
+            // Zoom keyboard shortcuts
+            if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                const newScale = Math.min(3, scale + 0.1);
+                if (newScale !== scale) {
+                    setScale(newScale);
+                }
+            }
+            if (e.key === '-' || e.key === '_') {
+                e.preventDefault();
+                const newScale = Math.max(0.5, scale - 0.1);
+                if (newScale !== scale) {
+                    setScale(newScale);
+                }
+            }
+            // Reset zoom to default
+            if (e.key === '0') {
+                e.preventDefault();
+                setScale(1.5);
             }
         };
 
@@ -673,7 +694,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             window.removeEventListener('keyup', handleKeyUp);
             window.removeEventListener('blur', handleBlur);
         };
-    }, [mode, isMagnifying, onCancelSelection]);
+    }, [mode, isMagnifying, onCancelSelection, scale]);
 
 
     useEffect(() => {
@@ -1320,33 +1341,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         }
     };
 
-   /* const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        const container = viewerContainerRef.current;
-        if (!container) return;
 
-        const rect = container.getBoundingClientRect();
-        const scrollLeft = container.scrollLeft;
-        const scrollTop = container.scrollTop;
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        const pointOnContentX = scrollLeft + mouseX;
-        const pointOnContentY = scrollTop + mouseY;
-
-        const oldScale = scale;
-        const newScale = Math.max(0.5, Math.min(3, oldScale - e.deltaY * 0.001));
-
-        if (newScale === oldScale) return;
-
-        const newScrollLeft = (pointOnContentX * newScale / oldScale) - mouseX;
-        const newScrollTop = (pointOnContentY * newScale / oldScale) - mouseY;
-
-        setScale(newScale);
-        scrollTargetRef.current = { left: newScrollLeft, top: newScrollTop };
-    };
-
-     */
 
     
     const getCursor = () => {
@@ -1415,6 +1410,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     >
                         Next
                     </button>
+                    <span className="text-xs text-gray-500">Zoom: +/- keys, Reset: 0</span>
                 </div>
             )}
         </div>
