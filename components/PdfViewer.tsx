@@ -666,6 +666,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                         if (e.key === '0') {
                             e.preventDefault();
                             setScale(1.5);
+                        }
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
