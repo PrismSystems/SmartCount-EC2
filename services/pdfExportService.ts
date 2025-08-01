@@ -56,47 +56,31 @@ async function svgToPngDataUrl(svgDataUrl: string, width: number, height: number
 }
 
 /**
- * Draws a pin shape on a pdf-lib page, rotating it to match the page's orientation.
+ * Draws a pin shape on a pdf-lib page.
+ * Since coordinates are already transformed to account for page rotation,
+ * we don't need to apply additional rotation to the pin geometry.
  */
-function drawPdfLibPin(page: any, x: number, y: number, size: number, color: {r: number, g: number, b: number}, rotation: number) {
+function drawPdfLibPin(page: any, x: number, y: number, size: number, color: {r: number, g: number, b: number}) {
     const { rgb } = PDFLib;
 
-    const angleRad = -rotation * Math.PI / 180;
-    const cos = Math.cos(angleRad);
-    const sin = Math.sin(angleRad);
+    // Pin's geometry (tip at origin, pointing up in +y)
+    const pinTip = { x: x, y: y };
+    const pinBaseLeft = { x: x - size, y: y + 2 * size };
+    const pinBaseRight = { x: x + size, y: y + 2 * size };
+    const pinHeadCenter = { x: x, y: y + 2 * size };
 
-    const rotate = (px: number, py: number) => ({
-        x: px * cos - py * sin,
-        y: px * sin + py * cos,
-    });
-
-    // Pin's geometry in its local coordinate system (tip at origin, pointing up in +y)
-    const localBaseLeft = { x: -size, y: 2 * size };
-    const localBaseRight = { x: size, y: 2 * size };
-    const localHeadCenter = { x: 0, y: 2 * size };
-
-    // Rotate the points
-    const rotatedBaseLeft = rotate(localBaseLeft.x, localBaseLeft.y);
-    const rotatedBaseRight = rotate(localBaseRight.x, localBaseRight.y);
-    const rotatedHeadCenter = rotate(localHeadCenter.x, localHeadCenter.y);
-
-    // Translate to world coordinates (where x, y is the pin tip)
-    const worldBaseLeft = { x: x + rotatedBaseLeft.x, y: y + rotatedBaseLeft.y };
-    const worldBaseRight = { x: x + rotatedBaseRight.x, y: y + rotatedBaseRight.y };
-    const worldHeadCenter = { x: x + rotatedHeadCenter.x, y: y + rotatedHeadCenter.y };
-
-    // Draw the rotated pin body
-    const pinBodyPath = `M ${x} ${y} L ${worldBaseLeft.x} ${worldBaseLeft.y} L ${worldBaseRight.x} ${worldBaseRight.y} Z`;
+    // Draw the pin body (triangle)
+    const pinBodyPath = `M ${pinTip.x} ${pinTip.y} L ${pinBaseLeft.x} ${pinBaseLeft.y} L ${pinBaseRight.x} ${pinBaseRight.y} Z`;
     page.drawSvgPath(pinBodyPath, {
         color: rgb(color.r, color.g, color.b),
         borderColor: rgb(0, 0, 0),
         borderWidth: 0.5,
     });
 
-    // Draw the rotated pin head
+    // Draw the pin head (circle)
     page.drawCircle({
-        x: worldHeadCenter.x,
-        y: worldHeadCenter.y,
+        x: pinHeadCenter.x,
+        y: pinHeadCenter.y,
         size: size,
         color: rgb(color.r, color.g, color.b),
         borderColor: rgb(0, 0, 0),
@@ -125,7 +109,30 @@ export const exportDaliPdf = async (project: Project, pdfId: string, pageNumber:
     const { width, height } = page.getSize();
     const rotation = page.getRotation().angle;
 
-    const transformPoint = (p: {x: number, y: number}): {x: number, y: number} => ({ x: p.x, y: height - p.y });
+    // Helper for coordinate transformation that accounts for page rotation
+    const transformPoint = (p: {x: number, y: number}): {x: number, y: number} => {
+        let transformedX = p.x;
+        let transformedY = p.y;
+        
+        // First, flip Y-axis to convert from canvas (top-left) to PDF (bottom-left)
+        transformedY = height - transformedY;
+        
+        // Then apply rotation-specific transformations
+        switch (rotation) {
+            case 90:
+                // Rotated 90° clockwise: (x,y) -> (y, width-x)
+                return { x: transformedY, y: width - transformedX };
+            case 180:
+                // Rotated 180°: (x,y) -> (width-x, height-y)
+                return { x: width - transformedX, y: height - transformedY };
+            case 270:
+                // Rotated 270° clockwise: (x,y) -> (height-y, x)
+                return { x: height - transformedY, y: transformedX };
+            default:
+                // No rotation (0°)
+                return { x: transformedX, y: transformedY };
+        }
+    };
 
     const daliDevicesOnPage = (project.daliDevices || []).filter(d => d.pdfId === pdfId && d.page === pageNumber);
     const daliNetworks = new Map((project.daliNetworks || []).map(n => [n.id, n]));
@@ -187,13 +194,14 @@ export const exportDaliPdf = async (project: Project, pdfId: string, pageNumber:
     const PADDING = 15;
     const LEGEND_WIDTH = 220;
     
-    let legendX, legendYAnchor;
+    // Adjust legend position based on rotation to avoid covering content
+    let legendX;
     if (rotation === 90 || rotation === 270) {
+        // For rotated pages, place legend in bottom-left corner
         legendX = PADDING;
-        legendYAnchor = 'bottom';
     } else {
+        // For normal orientation, place legend in bottom-right corner
         legendX = width - LEGEND_WIDTH - PADDING;
-        legendYAnchor = 'bottom';
     }
     
     let currentLegendY = PADDING;
@@ -305,13 +313,29 @@ export const exportMarkedUpPdf = async (
     const { width, height } = page.getSize();
     const rotation = page.getRotation().angle;
     
-    // Helper for coordinate transformation from top-left (canvas) to bottom-left (pdf-lib).
-    // The canvas has a top-left origin, while pdf-lib has a bottom-left origin.
-    // The page.getSize() and page drawing operations are relative to the current
-    // page orientation (rotation is already accounted for).
-    // Therefore, a simple y-axis flip is all that's needed.
+    // Helper for coordinate transformation that accounts for page rotation
     const transformPoint = (p: {x: number, y: number}): {x: number, y: number} => {
-        return { x: p.x, y: height - p.y };
+        let transformedX = p.x;
+        let transformedY = p.y;
+        
+        // First, flip Y-axis to convert from canvas (top-left) to PDF (bottom-left)
+        transformedY = height - transformedY;
+        
+        // Then apply rotation-specific transformations
+        switch (rotation) {
+            case 90:
+                // Rotated 90° clockwise: (x,y) -> (y, width-x)
+                return { x: transformedY, y: width - transformedX };
+            case 180:
+                // Rotated 180°: (x,y) -> (width-x, height-y)
+                return { x: width - transformedX, y: height - transformedY };
+            case 270:
+                // Rotated 270° clockwise: (x,y) -> (height-y, x)
+                return { x: height - transformedY, y: transformedX };
+            default:
+                // No rotation (0°)
+                return { x: transformedX, y: transformedY };
+        }
     };
 
     // --- Filter data for the current page ---
@@ -356,7 +380,7 @@ export const exportMarkedUpPdf = async (
         const color = hexToRgb(symbol.color);
         symbol.locations.forEach(loc => {
             const transformedCenter = transformPoint({ x: loc.x + loc.width / 2, y: loc.y + loc.height });
-            drawPdfLibPin(page, transformedCenter.x, transformedCenter.y, 4, color, rotation);
+            drawPdfLibPin(page, transformedCenter.x, transformedCenter.y, 4, color);
 
             if (options.withLabels) {
                 const text = symbol.name;
@@ -382,15 +406,13 @@ export const exportMarkedUpPdf = async (
     const LEGEND_WIDTH = 220;
     
     // Adjust legend position based on rotation to avoid covering content
-    let legendX, legendYAnchor;
+    let legendX;
     if (rotation === 90 || rotation === 270) {
-        // For landscape pages, anchor to bottom-left
+        // For rotated pages, place legend in bottom-left corner
         legendX = PADDING;
-        legendYAnchor = 'bottom';
     } else {
-        // For portrait pages, anchor to bottom-right
+        // For normal orientation, place legend in bottom-right corner
         legendX = width - LEGEND_WIDTH - PADDING;
-        legendYAnchor = 'bottom';
     }
     
     let currentLegendY = PADDING;
