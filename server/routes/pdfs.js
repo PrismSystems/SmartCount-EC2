@@ -84,6 +84,35 @@ router.get('/:id/download', async (req, res) => {
     }
 });
 
+// PUT /api/pdfs/:id/level
+router.put('/:id/level', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { level } = req.body;
+        
+        // Check if PDF exists and user has access
+        const result = await pool.query(
+            'SELECT p.*, pr.user_id FROM pdfs p JOIN projects pr ON p.project_id = pr.id WHERE p.id = $1 AND pr.user_id = $2',
+            [id, req.user.userId]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'PDF not found' });
+        }
+        
+        // Update the level in database
+        await pool.query(
+            'UPDATE pdfs SET level = $1 WHERE id = $2',
+            [level, id]
+        );
+        
+        res.json({ message: 'PDF level updated successfully' });
+    } catch (error) {
+        console.error('Update PDF level error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // DELETE /api/pdfs/:id
 router.delete('/:id', async (req, res) => {
     try {

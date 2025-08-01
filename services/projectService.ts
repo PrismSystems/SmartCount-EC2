@@ -227,6 +227,21 @@ export const projectService = {
         }
     },
 
+    async updatePdfLevel(pdfId: string, newLevel: string): Promise<void> {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/pdfs/${pdfId}/level`, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ level: newLevel })
+            });
+            
+            if (!response.ok) throw new Error('Failed to update PDF level');
+        } catch (error) {
+            console.error('Error updating PDF level:', error);
+            throw error;
+        }
+    },
+
     async deletePdfFromProject(_username: string, projectId: string, pdfId: string): Promise<Project | null> {
         try {
             console.log('Deleting PDF from project:', { projectId, pdfId });

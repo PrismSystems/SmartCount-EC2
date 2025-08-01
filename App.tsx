@@ -358,18 +358,28 @@ const App: React.FC = () => {
         setFilesToAdd(null); // Close modal
     };
     
-    const handleUpdatePdfLevel = (pdfId: string, newLevel: string) => {
+    const handleUpdatePdfLevel = async (pdfId: string, newLevel: string) => {
         if (!activeProject) return;
-        const newProject = {
-            ...activeProject,
-            pdfs: activeProject.pdfs.map(p => {
-                if (p.id === pdfId) {
-                    return { ...p, level: newLevel };
-                }
-                return p;
-            })
-        };
-        commitUpdate(newProject);
+        
+        try {
+            // Update the level in the database
+            await projectService.updatePdfLevel(pdfId, newLevel);
+            
+            // Update the local state
+            const newProject = {
+                ...activeProject,
+                pdfs: activeProject.pdfs.map(p => {
+                    if (p.id === pdfId) {
+                        return { ...p, level: newLevel };
+                    }
+                    return p;
+                })
+            };
+            commitUpdate(newProject);
+        } catch (error) {
+            console.error('Failed to update PDF level:', error);
+            setError('An error occurred while updating the PDF level.');
+        }
     };
 
     const handleDeletePdf = async (pdfId: string) => {
