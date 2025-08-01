@@ -647,6 +647,25 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 e.preventDefault();
                 setIsMagnifying(true);
             }
+                        // Zoom keyboard shortcuts
+                        if (e.key === '+' || e.key === '=') {
+                            e.preventDefault();
+                            const newScale = Math.min(3, scale + 0.1);
+                            if (newScale !== scale) {
+                                setScale(newScale);
+                            }
+                        }
+                        if (e.key === '-' || e.key === '_') {
+                            e.preventDefault();
+                            const newScale = Math.max(0.5, scale - 0.1);
+                            if (newScale !== scale) {
+                                setScale(newScale);
+                            }
+                        }
+                        // Reset zoom to default
+                        if (e.key === '0') {
+                            e.preventDefault();
+                            setScale(1.5);
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
@@ -673,7 +692,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             window.removeEventListener('keyup', handleKeyUp);
             window.removeEventListener('blur', handleBlur);
         };
-    }, [mode, isMagnifying, onCancelSelection]);
+    }, [mode, isMagnifying, onCancelSelection, scale]);
 
 
     useEffect(() => {
@@ -1415,6 +1434,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     >
                         Next
                     </button>
+                    <span className="text-xs text-gray-500">Zoom: +/- keys, Reset: 0</span>
                 </div>
             )}
         </div>
