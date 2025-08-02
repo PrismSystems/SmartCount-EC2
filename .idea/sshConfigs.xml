@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="smartcount.app" id="59574906-c759-4f7e-b082-8d48f7c6d069" keyPath="C:\Users\Terry\Documents\PrivaeKey\smartcount-key.pem.pem" port="22" nameFormat="DESCRIPTIVE" username="ubuntu" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>
