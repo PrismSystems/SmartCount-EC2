@@ -121,7 +121,7 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
                             <button 
                                 type="button" 
                                 onClick={onLogout}
-                                className="w-full py-3 bg-gray-500 text-white rounded-lg font-semibold text-lg hover:bg-gray-600 transition-all shadow-md mt-3"
+                                className="w-full py-3 bg-red-500 text-white rounded-lg font-semibold text-lg hover:bg-red-600 transition-all shadow-md mt-3"
                             >
                                 Logout
                             </button>
