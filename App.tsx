@@ -1847,6 +1847,7 @@ const App: React.FC = () => {
             onCreate={handleCreateProject} 
             onLoad={handleLoadProject} 
             onDelete={handleDeleteProject}
+            onLogout={handleLogout}
         />;
     }
     

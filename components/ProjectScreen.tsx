@@ -10,9 +10,10 @@ interface ProjectScreenProps {
     onCreate: (name: string, filesWithLevels: { file: File, level: string }[], templateId: string | null) => void;
     onLoad: (id: string) => void;
     onDelete: (id: string) => void;
+    onLogout: () => void;
 }
 
-export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate, onLoad, onDelete }) => {
+export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate, onLoad, onDelete, onLogout }) => {
     const [newProjectName, setNewProjectName] = useState('');
     const [newProjectFiles, setNewProjectFiles] = useState<File[]>([]);
     const [newProjectLevels, setNewProjectLevels] = useState<string[]>([]);
@@ -116,6 +117,13 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
                             </div>
                             <button type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold text-lg hover:bg-blue-700 transition-all shadow-md">
                                 Start Project
+                            </button>
+                            <button 
+                                type="button" 
+                                onClick={onLogout}
+                                className="w-full py-3 bg-gray-500 text-white rounded-lg font-semibold text-lg hover:bg-gray-600 transition-all shadow-md mt-3"
+                            >
+                                Logout
                             </button>
                         </form>
                     </div>
