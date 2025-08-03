@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
 import {App_Name, App_Tag_Line} from "@/constants.ts";
-import image from '../assets/RocketBackground.jpeg';
+import image from '../assets/rocketGreen.jpeg';
 
 interface AuthScreenProps {
     onLoginSuccess: (email: string) => void;
@@ -83,14 +82,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             {/* Content Overlay */}
             <div className="relative z-10 w-full h-full flex items-center">
                 {/* Left Side - App Name and Tagline */}
-                <div className="w-1/2 pl-16 text-white">
+                <div className="w-1/2 pr-16 text-white ml-auto mr-0">
                     <h1 className="text-8xl font-bold mb-4 drop-shadow-lg">
                         {App_Name}
                     </h1>
                     <p className="text-4xl font-semibold drop-shadow-lg">
                         Ready to Accelerate Your Takeoff?
                     </p>
-                    <p className="w-1/2 flex justify-center mt-12">
+                    <p className="w-1/2 flex justify-right mt-12">
                     <button
                         onClick={handleLaunch}
                         className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-white/20"
