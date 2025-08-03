@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
 import {App_Name, App_Tag_Line} from "@/constants.ts";
+import image from '../assets/RocketBackground.jpeg';
 
 interface AuthScreenProps {
     onLoginSuccess: (email: string) => void;
@@ -75,7 +76,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             <div 
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
-                    backgroundImage: `url('/assets/RocketBackground.jpeg')`
+                    backgroundImage:`url(${image})`
                 }}
             />
             
@@ -83,22 +84,25 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             <div className="relative z-10 w-full h-full flex items-center">
                 {/* Left Side - App Name and Tagline */}
                 <div className="w-1/2 pl-16 text-white">
-                    <h1 className="text-6xl font-bold mb-4 drop-shadow-lg">
+                    <h1 className="text-8xl font-bold mb-4 drop-shadow-lg">
                         {App_Name}
                     </h1>
-                    <p className="text-2xl font-semibold drop-shadow-lg">
+                    <p className="text-4xl font-semibold drop-shadow-lg">
                         Ready for Takeoff Acceleration?
+                    </p>
+                    <p className="w-1/2 flex justify-center mt-12">
+                    <button
+                        onClick={handleLaunch}
+                        className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-white/20"
+                    >
+                        LAUNCH
+                    </button>
                     </p>
                 </div>
                 
                 {/* Right Side - Launch Button */}
-                <div className="w-1/2 flex justify-center">
-                    <button 
-                        onClick={handleLaunch}
-                        className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold text-xl px-12 py-6 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-white/20"
-                    >
-                        🚀 LAUNCH
-                    </button>
+                <div >
+
                 </div>
             </div>
 
