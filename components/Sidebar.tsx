@@ -269,7 +269,7 @@ const AreaManager: React.FC<{
             <button
                 onClick={onStartAreaDrawing}
                 disabled={mode !== 'idle'}
-                className="w-full flex items-center justify-center px-4 py-2.5 mb-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all shadow disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-4 py-2.5 mb-3 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all shadow disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
                 <AddIcon />
                 <span className="ml-2 font-semibold">Define New Area</span>
