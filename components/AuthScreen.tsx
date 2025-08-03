@@ -86,13 +86,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                     <h1 className="text-8xl text-[#284763] font-bold mb-4 drop-shadow-lg">
                         {App_Name}
                     </h1>
-                    <p className="text-4xl text-[#1A2A3A]font-semibold drop-shadow-lg">
-                        Ready to Accelerate Your Takeoff?
+                    <p className="text-4xl text-white font-semibold drop-shadow-lg">
+                        Brace for Takeoff Acceleration
                     </p>
                     <p className="w-1/2 flex justify-right mt-12">
                     <button
                         onClick={handleLaunch}
-                        className="bg-[#C3262D] text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-white/20"
+                        className="bg-[#D0021B] text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-white/20"
                     >
                         Launch
                     </button>
