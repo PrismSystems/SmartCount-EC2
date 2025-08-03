@@ -1,5 +1,3 @@
-
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { PdfViewer } from './components/PdfViewer';
@@ -41,6 +39,9 @@ const App: React.FC = () => {
     const [activeSymbolId, setActiveSymbolId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [activeDisciplineId, setActiveDisciplineId] = useState<string | null>(null);
+    
+    // Sidebar state for tablet support
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
     const [mode, setMode] = useState<'idle' | 'selecting_manual' | 'placing_dots' | 'drawing_area' | 'setting_scale' | 'drawing_measurement' | 'placing_dali_device' | 'selecting_dali_painter_source' | 'painting_dali_device' | 'placing_dali_psu' | 'painting_dali_psu_location'>('idle');
     const [symbolToCopy, setSymbolToCopy] = useState<SymbolInfo | null>(null);
@@ -1738,7 +1739,7 @@ const App: React.FC = () => {
             const findRoot = (discId: string): string => {
                 let current = activeProject.disciplines.find(d => d.id === discId);
                 while(current && current.parentId) {
-                    const parent = activeProject.disciplines.find(d => d.id === current.parentId);
+                    const parent = activeProject.disciplines.find(d => d.id === current!.parentId);
                     if (parent) {
                         current = parent;
                     } else {
@@ -1836,6 +1837,10 @@ const App: React.FC = () => {
 
         return [];
     }, [activeProject, activePdfId, mode, activeSymbolId, currentPage, activeDisciplineId]);
+
+    const handleToggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
 
     if (!currentUser) {
         return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
@@ -1969,6 +1974,8 @@ const App: React.FC = () => {
                 onDeletePsu={handleDeletePsu}
                 onRenumberDaliNetwork={handleRenumberDaliNetwork}
                 onSaveDaliNetworkAsTemplate={handleSaveDaliNetworkAsTemplate}
+                isSidebarOpen={isSidebarOpen}
+                onToggleSidebar={handleToggleSidebar}
             />
             <main className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200 overflow-auto">
                 {error && <div className="absolute top-4 bg-red-500 text-white p-3 rounded-lg shadow-lg z-50 animate-pulse" onClick={() => setError(null)}>{error}</div>}

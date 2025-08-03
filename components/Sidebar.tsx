@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Project, PdfFile, Area, LinearMeasurement, ScaleInfo, ManualEntry, MeasurementGroup, DaliNetwork, DaliDevice, DaliDeviceType, EcdType, DaliNetworkTemplate } from '../types';
 //import { SymbolCard } from './SymbolCard';
-import { AddIcon, ProjectsIcon, ChevronDownIcon, TrashIcon, EyeIcon, EyeOffIcon, EditIcon, RulerIcon, PdfFileIcon, LoadingIcon, PaintBrushIcon, TextIcon, TextOffIcon, PsuIcon, RenumberIcon, SaveIcon, WarningIcon } from './icons';
+import { AddIcon, ProjectsIcon, ChevronDownIcon, TrashIcon, EyeIcon, EyeOffIcon, EditIcon, RulerIcon, PdfFileIcon, LoadingIcon, PaintBrushIcon, TextIcon, TextOffIcon, PsuIcon, RenumberIcon, SaveIcon, WarningIcon, MenuIcon, XIcon } from './icons';
 import { measurementService } from '../services/measurementService';
 import { SymbolsAndDisciplinesManager } from './SymbolsAndDisciplinesManager';
 import {App_Name, Version_Number} from "@/constants.ts";
@@ -83,6 +83,10 @@ interface SidebarProps {
     onDeletePsu: (networkId: string) => void;
     onRenumberDaliNetwork: (networkId: string) => void;
     onSaveDaliNetworkAsTemplate: (networkId: string) => void;
+    
+    // Tablet-friendly props
+    isSidebarOpen: boolean;
+    onToggleSidebar: () => void;
 }
 
 const ProjectsDropdown: React.FC<{
@@ -957,7 +961,7 @@ const DaliManager: React.FC<{
 
 
 export const Sidebar: React.FC<SidebarProps> = (props) => {
-    const { activeProject, activePdfId, measurements, mode, scaleInfo, pdfOpacity, onPdfOpacityChange, currentPage, onExportDaliPdfReport, isExportingDaliPdf } = props;
+    const { activeProject, activePdfId, measurements, mode, scaleInfo, pdfOpacity, onPdfOpacityChange, currentPage, onExportDaliPdfReport, isExportingDaliPdf, isSidebarOpen, onToggleSidebar } = props;
     const areasForActivePdf = activeProject.areas.filter(a => a.pdfId === activePdfId);
 
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set(['symbols', 'measurements', 'areas', 'dali', 'viewerSettings']));
@@ -975,191 +979,216 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
     };
 
     return (
-        <aside className="w-96 bg-white h-full flex flex-col p-4 border-r border-gray-200 shadow-md">
-            <div className="mb-4">
-                 <ProjectsDropdown
-                    projects={props.projects}
-                    activeProject={props.activeProject}
-                    onSwitchProject={props.onSwitchProject}
-                    onCreateNew={props.onCreateNewProject}
-                    onDeleteProject={props.onDeleteProject}
-                    onLogout={props.onLogout}
-                 />
-            </div>
-            
-             <div className="flex-grow overflow-y-auto -mr-2 pr-2">
-                <div className="border-b border-gray-200 pb-2 mb-2">
-                    <button onClick={() => toggleSection('documents')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>Documents</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('documents') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('documents') && (
-                        <div className="pt-2 px-1">
-                            <PdfSwitcher
-                                pdfs={activeProject.pdfs}
-                                activePdfId={activePdfId}
-                                onSwitchPdf={props.onSwitchPdf}
-                                onAddPdfs={props.onAddPdfs}
-                                onUpdatePdfLevel={props.onUpdatePdfLevel}
-                                onDeletePdf={props.onDeletePdf}
-                            />
-                        </div>
-                    )}
-                </div>
+        <>
+            {/* Mobile/Tablet Toggle Button */}
+            <button
+                onClick={onToggleSidebar}
+                className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+                aria-label="Toggle sidebar"
+            >
+                {isSidebarOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+            </button>
 
-                <div className="border-b border-gray-200 pb-2 mb-2">
-                    <button onClick={() => toggleSection('viewerSettings')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>Viewer Settings</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('viewerSettings') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('viewerSettings') && (
-                        <div className="pt-2 px-1">
-                            <div className="p-3 bg-gray-50 rounded-lg border">
-                                <label htmlFor="pdf-opacity-slider" className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                                    <span>PDF Background Opacity</span>
-                                    <span>{Math.round(pdfOpacity * 100)}%</span>
-                                </label>
-                                <input
-                                    id="pdf-opacity-slider"
-                                    type="range"
-                                    min="0"
-                                    max="1"
-                                    step="0.01"
-                                    value={pdfOpacity}
-                                    onChange={(e) => onPdfOpacityChange(parseFloat(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            {/* Overlay for mobile/tablet */}
+            {isSidebarOpen && (
+                <div 
+                    className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                    onClick={onToggleSidebar}
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside className={`
+                fixed lg:static inset-y-0 left-0 z-50
+                w-80 lg:w-96 bg-white h-full flex flex-col p-4 border-r border-gray-200 shadow-md
+                transform transition-transform duration-300 ease-in-out
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+                <div className="mb-4">
+                     <ProjectsDropdown
+                        projects={props.projects}
+                        activeProject={props.activeProject}
+                        onSwitchProject={props.onSwitchProject}
+                        onCreateNew={props.onCreateNewProject}
+                        onDeleteProject={props.onDeleteProject}
+                        onLogout={props.onLogout}
+                     />
+                </div>
+                
+                 <div className="flex-grow overflow-y-auto -mr-2 pr-2">
+                    <div className="border-b border-gray-200 pb-2 mb-2">
+                        <button onClick={() => toggleSection('documents')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>Documents</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('documents') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('documents') && (
+                            <div className="pt-2 px-1">
+                                <PdfSwitcher
+                                    pdfs={activeProject.pdfs}
+                                    activePdfId={activePdfId}
+                                    onSwitchPdf={props.onSwitchPdf}
+                                    onAddPdfs={props.onAddPdfs}
+                                    onUpdatePdfLevel={props.onUpdatePdfLevel}
+                                    onDeletePdf={props.onDeletePdf}
                                 />
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
 
-                 <div className="border-b border-gray-200 pb-2 mb-2">
-                    <button onClick={() => toggleSection('dali')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>DALI Networks</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('dali') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('dali') && (
-                        <div className="pt-2 px-1">
-                            <DaliManager
-                                networks={props.activeProject.daliNetworks || []}
-                                devices={props.activeProject.daliDevices || []}
-                                ecdTypes={props.activeProject.ecdTypes || []}
-                                daliNetworkTemplates={props.activeProject.daliNetworkTemplates || []}
-                                onAddDaliNetwork={props.onAddDaliNetwork}
-                                onUpdateDaliNetwork={props.onUpdateDaliNetwork}
-                                onDeleteDaliNetwork={props.onDeleteDaliNetwork}
-                                onStartDaliPlacement={props.onStartDaliPlacement}
-                                onExportDaliPdfReport={onExportDaliPdfReport}
-                                isExportingDaliPdf={isExportingDaliPdf}
-                                activePdfId={activePdfId}
-                                currentPage={currentPage}
+                    <div className="border-b border-gray-200 pb-2 mb-2">
+                        <button onClick={() => toggleSection('viewerSettings')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>Viewer Settings</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('viewerSettings') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('viewerSettings') && (
+                            <div className="pt-2 px-1">
+                                <div className="p-3 bg-gray-50 rounded-lg border">
+                                    <label htmlFor="pdf-opacity-slider" className="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                                        <span>PDF Background Opacity</span>
+                                        <span>{Math.round(pdfOpacity * 100)}%</span>
+                                    </label>
+                                    <input
+                                        id="pdf-opacity-slider"
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.01"
+                                        value={pdfOpacity}
+                                        onChange={(e) => onPdfOpacityChange(parseFloat(e.target.value))}
+                                        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500 touch-manipulation"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                     <div className="border-b border-gray-200 pb-2 mb-2">
+                        <button onClick={() => toggleSection('dali')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>DALI Networks</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('dali') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('dali') && (
+                            <div className="pt-2 px-1">
+                                <DaliManager
+                                    networks={props.activeProject.daliNetworks || []}
+                                    devices={props.activeProject.daliDevices || []}
+                                    ecdTypes={props.activeProject.ecdTypes || []}
+                                    daliNetworkTemplates={props.activeProject.daliNetworkTemplates || []}
+                                    onAddDaliNetwork={props.onAddDaliNetwork}
+                                    onUpdateDaliNetwork={props.onUpdateDaliNetwork}
+                                    onDeleteDaliNetwork={props.onDeleteDaliNetwork}
+                                    onStartDaliPlacement={props.onStartDaliPlacement}
+                                    onExportDaliPdfReport={onExportDaliPdfReport}
+                                    isExportingDaliPdf={isExportingDaliPdf}
+                                    activePdfId={activePdfId}
+                                    currentPage={currentPage}
+                                    mode={props.mode}
+                                    onOpenEcdSchedule={props.onOpenEcdSchedule}
+                                    onDaliNetworkHover={props.onDaliNetworkHover}
+                                    onStartDaliPaintSelection={props.onStartDaliPaintSelection}
+                                    showDaliLabels={props.showDaliLabels}
+                                    onToggleDaliLabels={props.onToggleDaliLabels}
+                                    onStartPlacePsu={props.onStartPlacePsu}
+                                    onDeletePsu={props.onDeletePsu}
+                                    onRenumberDaliNetwork={props.onRenumberDaliNetwork}
+                                    onSaveDaliNetworkAsTemplate={props.onSaveDaliNetworkAsTemplate}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+
+                    <div className="border-b border-gray-200 pb-2 mb-2">
+                        <button onClick={() => toggleSection('measurements')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>Measurements</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('measurements') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('measurements') && (
+                            <div className="pt-2 px-1">
+                                <MeasurementManager
+                                    measurements={measurements}
+                                    measurementGroups={props.activeProject.measurementGroups || []}
+                                    scaleInfo={scaleInfo}
+                                    onStartSetScale={props.onStartSetScale}
+                                    onStartMeasure={props.onStartMeasure}
+                                    onStartAddToMeasurement={props.onStartAddToMeasurement}
+                                    onUpdateMeasurement={props.onUpdateMeasurement}
+                                    onDeleteMeasurement={props.onDeleteMeasurement}
+                                    mode={mode}
+                                    selectedMeasurementId={props.selectedMeasurementId}
+                                    onSelectMeasurement={props.onSelectMeasurement}
+                                    onOpenManualLengthModal={props.onOpenManualLengthModal}
+                                    onDeleteManualEntry={props.onDeleteManualEntry}
+                                    onAddMeasurementGroup={props.onAddMeasurementGroup}
+                                    onUpdateMeasurementGroupName={props.onUpdateMeasurementGroupName}
+                                    onDeleteMeasurementGroup={props.onDeleteMeasurementGroup}
+                                    onAssignMeasurementToGroup={props.onAssignMeasurementToGroup}
+                                    onUpdateMeasurementGroupParent={props.onUpdateMeasurementGroupParent}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="border-b border-gray-200 pb-2 mb-2">
+                        <button onClick={() => toggleSection('areas')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>Areas</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('areas') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('areas') && (
+                            <div className="pt-2 px-1">
+                                <AreaManager 
+                                    areas={areasForActivePdf}
+                                    onStartAreaDrawing={props.onStartAreaDrawing}
+                                    onDeleteArea={props.onDeleteArea}
+                                    onUpdateArea={props.onUpdateArea}
+                                    mode={mode}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pb-2 mb-2">
+                        <button onClick={() => toggleSection('symbols')} className="w-full flex justify-between items-center py-3 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2 transition-colors">
+                            <span>Symbols & Disciplines</span>
+                            <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('symbols') ? '-rotate-90' : ''}`} />
+                        </button>
+                        {!collapsedSections.has('symbols') && (
+                             <SymbolsAndDisciplinesManager
+                                activeProject={props.activeProject}
+                                activePdfId={props.activePdfId}
+                                onStartManualSelection={props.onStartManualSelection}
+                                onExportExcel={props.onExportExcel}
+                                onExportPdfReport={props.onExportPdfReport}
+                                onViewCounts={props.onViewCounts}
+                                isExporting={props.isExporting}
+                                isExportingPdf={props.isExportingPdf}
+                                isLoading={props.isLoading}
                                 mode={props.mode}
-                                onOpenEcdSchedule={props.onOpenEcdSchedule}
-                                onDaliNetworkHover={props.onDaliNetworkHover}
-                                onStartDaliPaintSelection={props.onStartDaliPaintSelection}
-                                showDaliLabels={props.showDaliLabels}
-                                onToggleDaliLabels={props.onToggleDaliLabels}
-                                onStartPlacePsu={props.onStartPlacePsu}
-                                onDeletePsu={props.onDeletePsu}
-                                onRenumberDaliNetwork={props.onRenumberDaliNetwork}
-                                onSaveDaliNetworkAsTemplate={props.onSaveDaliNetworkAsTemplate}
-                            />
-                        </div>
-                    )}
+                                onSymbolNameChange={props.onSymbolNameChange}
+                                onSymbolColorChange={props.onSymbolColorChange}
+                                onSymbolImageChange={props.onSymbolImageChange}
+                                onSymbolDelete={props.onSymbolDelete}
+                                onAddPoints={props.onAddPoints}
+                                onOpenCopyModal={props.onOpenCopyModal}
+                                activeSymbolId={props.activeSymbolId}
+                                setActiveSymbolId={props.setActiveSymbolId}
+                                onAddDiscipline={props.onAddDiscipline}
+                                onUpdateDisciplineName={props.onUpdateDisciplineName}
+                                onAssignDiscipline={props.onAssignDiscipline}
+                                activeDisciplineId={props.activeDisciplineId}
+                                setActiveDisciplineId={props.setActiveDisciplineId}
+                                onDeleteDiscipline={props.onDeleteDiscipline}
+                                onUpdateDisciplineParent={props.onUpdateDisciplineParent}
+                                measurements={props.measurements}
+                             />
+                        )}
+                    </div>
                 </div>
-
-
-                <div className="border-b border-gray-200 pb-2 mb-2">
-                    <button onClick={() => toggleSection('measurements')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>Measurements</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('measurements') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('measurements') && (
-                        <div className="pt-2 px-1">
-                            <MeasurementManager
-                                measurements={measurements}
-                                measurementGroups={props.activeProject.measurementGroups || []}
-                                scaleInfo={scaleInfo}
-                                onStartSetScale={props.onStartSetScale}
-                                onStartMeasure={props.onStartMeasure}
-                                onStartAddToMeasurement={props.onStartAddToMeasurement}
-                                onUpdateMeasurement={props.onUpdateMeasurement}
-                                onDeleteMeasurement={props.onDeleteMeasurement}
-                                mode={mode}
-                                selectedMeasurementId={props.selectedMeasurementId}
-                                onSelectMeasurement={props.onSelectMeasurement}
-                                onOpenManualLengthModal={props.onOpenManualLengthModal}
-                                onDeleteManualEntry={props.onDeleteManualEntry}
-                                onAddMeasurementGroup={props.onAddMeasurementGroup}
-                                onUpdateMeasurementGroupName={props.onUpdateMeasurementGroupName}
-                                onDeleteMeasurementGroup={props.onDeleteMeasurementGroup}
-                                onAssignMeasurementToGroup={props.onAssignMeasurementToGroup}
-                                onUpdateMeasurementGroupParent={props.onUpdateMeasurementGroupParent}
-                            />
-                        </div>
-                    )}
+                
+                <div className="mt-auto pt-4 border-t border-gray-200 text-center">
+                    <p className="text-xs text-gray-400">{App_Name} v{Version_Number}</p>
                 </div>
-
-                <div className="border-b border-gray-200 pb-2 mb-2">
-                    <button onClick={() => toggleSection('areas')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>Areas</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('areas') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('areas') && (
-                        <div className="pt-2 px-1">
-                            <AreaManager 
-                                areas={areasForActivePdf}
-                                onStartAreaDrawing={props.onStartAreaDrawing}
-                                onDeleteArea={props.onDeleteArea}
-                                onUpdateArea={props.onUpdateArea}
-                                mode={mode}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                <div className="pb-2 mb-2">
-                    <button onClick={() => toggleSection('symbols')} className="w-full flex justify-between items-center py-1 text-lg font-semibold text-gray-800 hover:bg-gray-50 rounded-md px-2">
-                        <span>Symbols & Disciplines</span>
-                        <ChevronDownIcon className={`h-5 w-5 transition-transform ${collapsedSections.has('symbols') ? '-rotate-90' : ''}`} />
-                    </button>
-                    {!collapsedSections.has('symbols') && (
-                         <SymbolsAndDisciplinesManager
-                            activeProject={props.activeProject}
-                            activePdfId={props.activePdfId}
-                            onStartManualSelection={props.onStartManualSelection}
-                            onExportExcel={props.onExportExcel}
-                            onExportPdfReport={props.onExportPdfReport}
-                            onViewCounts={props.onViewCounts}
-                            isExporting={props.isExporting}
-                            isExportingPdf={props.isExportingPdf}
-                            isLoading={props.isLoading}
-                            mode={props.mode}
-                            onSymbolNameChange={props.onSymbolNameChange}
-                            onSymbolColorChange={props.onSymbolColorChange}
-                            onSymbolImageChange={props.onSymbolImageChange}
-                            onSymbolDelete={props.onSymbolDelete}
-                            onAddPoints={props.onAddPoints}
-                            onOpenCopyModal={props.onOpenCopyModal}
-                            activeSymbolId={props.activeSymbolId}
-                            setActiveSymbolId={props.setActiveSymbolId}
-                            onAddDiscipline={props.onAddDiscipline}
-                            onUpdateDisciplineName={props.onUpdateDisciplineName}
-                            onAssignDiscipline={props.onAssignDiscipline}
-                            activeDisciplineId={props.activeDisciplineId}
-                            setActiveDisciplineId={props.setActiveDisciplineId}
-                            onDeleteDiscipline={props.onDeleteDiscipline}
-                            onUpdateDisciplineParent={props.onUpdateDisciplineParent}
-                            measurements={props.measurements}
-                         />
-                    )}
-                </div>
-            </div>
-            
-            <div className="mt-auto pt-4 border-t border-gray-200 text-center">
-                <p className="text-xs text-gray-400">{App_Name} v{Version_Number}</p>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
