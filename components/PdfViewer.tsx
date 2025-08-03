@@ -525,10 +525,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     // DALI hover state
     const viewerHoveredPsuNetworkRef = useRef<string | null>(null);
 
-    // Touch state for tablet support
-    const [touchStart, setTouchStart] = useState<{x: number, y: number} | null>(null);
-    const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
-
     const clearCanvas = () => {
         const canvas = canvasRef.current;
         const overlayCanvas = overlayCanvasRef.current;
@@ -1388,73 +1384,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         return 'cursor-grab';
     };
 
-    // Touch event handlers for tablet support
-    const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        if (e.touches.length === 1) {
-            const touch = e.touches[0];
-            const rect = canvasRef.current?.getBoundingClientRect();
-            if (rect) {
-                const pos = {
-                    x: touch.clientX - rect.left,
-                    y: touch.clientY - rect.top,
-                };
-                setTouchStart(pos);
-                handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY } as any);
-            }
-        } else if (e.touches.length === 2) {
-            // Pinch to zoom
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            const distance = Math.sqrt(
-                Math.pow(touch2.clientX - touch1.clientX, 2) +
-                Math.pow(touch2.clientY - touch1.clientY, 2)
-            );
-            setLastTouchDistance(distance);
-        }
-    };
-
-    const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        if (e.touches.length === 1 && touchStart) {
-            const touch = e.touches[0];
-            const rect = canvasRef.current?.getBoundingClientRect();
-            if (rect) {
-                const pos = {
-                    x: touch.clientX - rect.left,
-                    y: touch.clientY - rect.top,
-                };
-                handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as any);
-            }
-        } else if (e.touches.length === 2 && lastTouchDistance !== null) {
-            // Handle pinch zoom
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            const distance = Math.sqrt(
-                Math.pow(touch2.clientX - touch1.clientX, 2) +
-                Math.pow(touch2.clientY - touch1.clientY, 2)
-            );
-            
-            const scaleFactor = distance / lastTouchDistance;
-            const newScale = Math.max(0.5, Math.min(3, scale * scaleFactor));
-            if (Math.abs(newScale - scale) > 0.1) {
-                setScale(newScale);
-            }
-            setLastTouchDistance(distance);
-        }
-    };
-
-    const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        if (e.touches.length === 0) {
-            setTouchStart(null);
-            setLastTouchDistance(null);
-            handleMouseUp();
-        }
-    };
-
     return (
         <div className="w-full h-full flex flex-col items-center justify-center space-y-2">
             <div
                 ref={viewerContainerRef}
                 className={`flex-grow w-full h-[calc(100%-40px)] overflow-auto bg-gray-300 shadow-inner relative ${getCursor()}`}
+                // Remove the onWheel prop
                 style={{ touchAction: 'none' }}
             >
                  {isRendering && <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-30"><LoadingIcon/> Rendering PDF...</div>}
@@ -1466,9 +1401,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
                     />
                     <canvas ref={overlayCanvasRef} className="absolute top-0 left-0 pointer-events-none z-10" />
                     {(mode.startsWith('placing_dali') || mode.startsWith('painting_dali') || mode === 'placing_dots') && isMagnifying && mousePos && (
@@ -1487,24 +1419,23 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 </div>
             </div>
             {numPages > 0 && (
-                <div className="flex items-center space-x-4 bg-white px-4 py-2 rounded-full shadow-md">
+                <div className="flex items-center space-x-4 bg-white px-4 py-1 rounded-full shadow-md">
                     <button 
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
                         disabled={currentPage <= 1 || mode !== 'idle'}
-                        className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation min-w-[60px]"
+                        className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         Prev
                     </button>
-                    <span className="text-sm font-medium">Page {currentPage} of {numPages}</span>
+                    <span>Page {currentPage} of {numPages}</span>
                     <button 
                         onClick={() => setCurrentPage(p => Math.min(numPages, p + 1))} 
                         disabled={currentPage >= numPages || mode !== 'idle'}
-                        className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation min-w-[60px]"
+                        className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         Next
                     </button>
-                    <div className="hidden sm:block text-xs text-gray-500">Zoom: +/- keys, Reset: 0</div>
-                    <div className="sm:hidden text-xs text-gray-500">Pinch to zoom</div>
+                    <span className="text-xs text-gray-500">Zoom: +/- keys, Reset: 0</span>
                 </div>
             )}
         </div>
