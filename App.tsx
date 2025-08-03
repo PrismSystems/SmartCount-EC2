@@ -1858,44 +1858,44 @@ const App: React.FC = () => {
 
     const getSelectionBanner = () => {
         if (mode === 'selecting_manual') {
-            return <div className="absolute top-4 bg-highlight text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Draw a box around the symbol to add manually. Press 'Escape' to cancel.</div>;
+            return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a box around the symbol to add manually. Press 'Escape' to cancel.</div>;
         }
         if (mode === 'placing_dots') {
-            return <div className="absolute top-4 bg-highlight text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click to place pins. Press 'Enter' or 'Escape' to finish.</div>;
+            return <div className="absolute top-4 bg-blue-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place pins. Press 'Enter' or 'Escape' to finish.</div>;
         }
         if (mode === 'drawing_area') {
-            return <div className="absolute top-4 bg-success-500 text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click to draw polygon points. Press 'Enter' to finish or 'Escape' to cancel.</div>;
+            return <div className="absolute top-4 bg-green-500 text-white p-3 rounded-lg shadow-lg z-50">Click to draw polygon points. Press 'Enter' to finish or 'Escape' to cancel.</div>;
         }
         if (mode === 'setting_scale') {
-            return <div className="absolute top-4 bg-primary text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Draw a line over a known distance. Press 'Enter' when done or 'Escape' to cancel.</div>;
+            return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">Draw a line over a known distance. Press 'Enter' when done or 'Escape' to cancel.</div>;
         }
         if (mode === 'drawing_measurement') {
             const text = activeDrawingMeasurementId ? 'Click to add a new segment. Press \'Enter\' to save.' : 'Click to draw measurement points. Press \'Enter\' to save.';
-            return <div className="absolute top-4 bg-primary text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">{text} Press 'Escape' to cancel.</div>;
+            return <div className="absolute top-4 bg-purple-500 text-white p-3 rounded-lg shadow-lg z-50">{text} Press 'Escape' to cancel.</div>;
         }
         if (mode === 'placing_dali_device') {
             const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPlacement?.networkId);
             const deviceTypeName = activeDaliPlacement?.deviceType === 'ECG' ? 'ECG (Gear)' : 'ECD (Control)';
-            return <div className="absolute top-4 bg-secondary text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click to place a {deviceTypeName} for network {network?.name}. Press 'Enter' or 'Escape' to finish.</div>;
+            return <div className="absolute top-4 bg-cyan-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a {deviceTypeName} for network {network?.name}. Press 'Enter' or 'Escape' to finish.</div>;
         }
         if (mode === 'selecting_dali_painter_source') {
-            return <div className="absolute top-4 bg-accent text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click on a DALI device or PSU to copy its properties. Press 'Escape' to cancel.</div>;
+            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on a DALI device or PSU to copy its properties. Press 'Escape' to cancel.</div>;
         }
         if (mode === 'painting_dali_device') {
-            return <div className="absolute top-4 bg-accent text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click to place copies. Press 'Enter' or 'Escape' to finish.</div>;
+            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place copies. Press 'Enter' or 'Escape' to finish.</div>;
         }
         if (mode === 'painting_dali_psu_location') {
-            return <div className="absolute top-4 bg-accent text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click on other PSUs to apply the location. Press 'Enter' or 'Escape' to finish.</div>;
+            return <div className="absolute top-4 bg-violet-500 text-white p-3 rounded-lg shadow-lg z-50">Click on other PSUs to apply the location. Press 'Enter' or 'Escape' to finish.</div>;
         }
         if (mode === 'placing_dali_psu') {
             const network = activeProject?.daliNetworks?.find(n => n.id === activeDaliPsuPlacementNetworkId);
-            return <div className="absolute top-4 bg-secondary text-white p-3 rounded-lg shadow-elevated z-50 animate-fade-in">Click to place a Power Supply Unit for network {network?.name}. Press 'Escape' to finish.</div>;
+            return <div className="absolute top-4 bg-indigo-500 text-white p-3 rounded-lg shadow-lg z-50">Click to place a Power Supply Unit for network {network?.name}. Press 'Escape' to finish.</div>;
         }
         return null;
     }
 
     return (
-        <div className="flex h-screen bg-neutral-50 font-sans">
+        <div className="flex h-screen bg-gray-100 font-sans">
             <Sidebar
                 projects={projects}
                 activeProject={activeProject}
@@ -1970,8 +1970,8 @@ const App: React.FC = () => {
                 onRenumberDaliNetwork={handleRenumberDaliNetwork}
                 onSaveDaliNetworkAsTemplate={handleSaveDaliNetworkAsTemplate}
             />
-            <main className="flex-1 flex flex-col items-center justify-center p-4 bg-neutral-100 overflow-auto">
-                {error && <div className="absolute top-4 bg-error-500 text-white p-3 rounded-lg shadow-elevated z-50 animate-pulse" onClick={() => setError(null)}>{error}</div>}
+            <main className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-200 overflow-auto">
+                {error && <div className="absolute top-4 bg-red-500 text-white p-3 rounded-lg shadow-lg z-50 animate-pulse" onClick={() => setError(null)}>{error}</div>}
                 {getSelectionBanner()}
                 <PdfViewer
                     pdfData={activePdfData}
