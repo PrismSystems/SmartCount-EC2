@@ -88,7 +88,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                         {App_Name}
                     </h1>
                     <p className="text-4xl font-semibold drop-shadow-lg">
-                        Ready to Accelerate your Takeoff?
+                        Ready for Takeoff Acceleration?
                     </p>
                     <p className="w-1/2 flex justify-center mt-12">
                     <button
@@ -173,7 +173,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             </button>
                         </p>
                         <p className="text-xs text-gray-400 mt-8 text-center">
-                            Your password is encrypted, please use a unique password.
+                            Note: For demonstration purposes, user data is stored locally in your browser and is not secured. Do not use real passwords.
                         </p>
                     </div>
                 </div>
