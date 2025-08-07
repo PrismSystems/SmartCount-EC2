@@ -1436,7 +1436,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                     >
                         Next
                     </button>
-                    <span className="text-xs text-gray-500">Zoom: +/- keys, Reset: 0</span>
+
                 </div>
             )}
         </div>

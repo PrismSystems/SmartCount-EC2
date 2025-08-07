@@ -136,6 +136,7 @@ export interface Project {
     disciplines: Discipline[];
     areas: Area[];
     createdAt: number;
+    updatedAt: number;
     measurements: LinearMeasurement[];
     measurementGroups: MeasurementGroup[];
     daliNetworks?: DaliNetwork[];

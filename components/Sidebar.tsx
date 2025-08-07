@@ -112,7 +112,7 @@ const ProjectsDropdown: React.FC<{
         }
     }
 
-    const sortedProjects = [...projects].sort((a,b) => b.createdAt - a.createdAt);
+    const sortedProjects = [...projects].sort((a, b) => b.updatedAt - a.updatedAt);  // Most recent first
 
     return (
         <div className="relative" ref={dropdownRef}>

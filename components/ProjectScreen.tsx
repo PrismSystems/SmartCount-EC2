@@ -55,7 +55,7 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
         setSearchQuery('');
     };
 
-    const sortedProjects = [...projects].sort((a, b) => b.createdAt - a.createdAt);
+    const sortedProjects = [...projects].sort((a, b) => b.updatedAt - a.updatedAt);
     
     const filteredProjects = sortedProjects.filter(project =>
         project.name.toLowerCase().includes(searchQuery.toLowerCase())
