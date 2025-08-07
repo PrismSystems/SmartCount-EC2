@@ -19,6 +19,7 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
     const [newProjectLevels, setNewProjectLevels] = useState<string[]>([]);
     const [templateId, setTemplateId] = useState<string | null>(null);
     const [error, setError] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -46,7 +47,19 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
         setError('');
     };
 
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+    };
+
     const sortedProjects = [...projects].sort((a, b) => b.createdAt - a.createdAt);
+    
+    const filteredProjects = sortedProjects.filter(project =>
+        project.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="w-full h-full bg-gray-100 flex items-center justify-center p-8">
@@ -131,14 +144,52 @@ export const ProjectScreen: React.FC<ProjectScreenProps> = ({ projects, onCreate
                     {/* Existing Projects Section */}
                     <div className="bg-white p-8 rounded-2xl shadow-lg">
                          <h2 className="text-2xl font-bold text-gray-700 mb-6">Existing Projects</h2>
+                         
+                         {/* Search Input */}
+                         <div className="mb-6">
+                             <label htmlFor="project-search" className="block text-sm font-medium text-gray-600 mb-2">Search Projects</label>
+                             <div className="relative">
+                                 <input
+                                     id="project-search"
+                                     type="text"
+                                     value={searchQuery}
+                                     onChange={handleSearchChange}
+                                     placeholder="Search by project name..."
+                                     className="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                     aria-label="Search projects"
+                                 />
+                                 {searchQuery && (
+                                     <button
+                                         onClick={handleClearSearch}
+                                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                         aria-label="Clear search"
+                                         tabIndex={0}
+                                         onKeyDown={(e) => {
+                                             if (e.key === 'Enter' || e.key === ' ') {
+                                                 e.preventDefault();
+                                                 handleClearSearch();
+                                             }
+                                         }}
+                                     >
+                                         ✕
+                                     </button>
+                                 )}
+                             </div>
+                         </div>
+
                          {sortedProjects.length === 0 ? (
                             <div className="text-center text-gray-500 py-10">
                                 <p>You have no saved projects.</p>
                                 <p>Create a new one to get started!</p>
                             </div>
+                         ) : filteredProjects.length === 0 ? (
+                            <div className="text-center text-gray-500 py-10">
+                                <p>No projects found matching "{searchQuery}".</p>
+                                <p>Try adjusting your search terms.</p>
+                            </div>
                          ) : (
                             <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 -mr-4">
-                                {sortedProjects.map(p => (
+                                {filteredProjects.map(p => (
                                     <div key={p.id} className="group flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-blue-50 transition-colors">
                                         <div>
                                             <p className="font-semibold text-gray-800">{p.name}</p>
